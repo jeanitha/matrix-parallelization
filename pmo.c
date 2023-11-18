@@ -16,6 +16,42 @@
 // for mac, use sysctl (uncomment below and delete sysinfo)
 #include <sys/sysctl.h>
 
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////GLOBAL VARIABLES/STRUCTS////////////////////////////
+/*
+  statement stores the whole equation to solve
+*/
+char statement[30];
+
+/*
+  operation stores all the operations found in the statement.
+  Including '+', '-', and '*'
+*/
+char operation[11];
+
+/*
+  these integer will be used to print the matrices.
+  It must be set to the column size of the matrix.
+  It will be used on the printMatrix() function
+*/
+int finalMatrixLength = 0;
+int matrix_1_length = 0;
+int matrix_2_length = 0;
+int matrix_3_length = 0;
+
+/*
+  holds all the matrixes (A,B,C,D,...)
+*/
+char matrix[11];
+
+/*
+  matrix count
+*/
+int totalMatrix = 0;
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////FUNCTIONS///////////////////////////////////////
 
 void append(char *s, char c)
 {
@@ -23,27 +59,6 @@ void append(char *s, char c)
   s[len] = c;
   s[len + 1] = '\0';
 }
-
-void print2DArray(int arr[][101], int rows, int cols) {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            printf("%d ", arr[i][j]);
-        }
-        printf("\n");
-    }
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////GLOBAL VARIABLES/STRUCTS////////////////////////////
-char statement[30];
-char operation[11];
-char matrix[11];
-int totalMatrix = 0;
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////FUNCTIONS///////////////////////////////////////
 
 void scanStatement()
 {
@@ -66,6 +81,96 @@ void scanStatement()
   // puts(operation);
   // puts(matrix);
   // printf("%d", totalMatrix);
+}
+
+void printFinalMatrix(int (*ptr)[finalMatrixLength], int rows, int columns)
+{
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      printf("%d ", ptr[i][j]);
+    }
+    printf("\n");
+  }
+}
+
+void print_first_matrix(int (*ptr)[matrix_1_length], int rows, int columns)
+{
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      printf("%d ", ptr[i][j]);
+    }
+    printf("\n");
+  }
+}
+
+void print_second_matrix(int (*ptr)[matrix_2_length], int rows, int columns)
+{
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      printf("%d ", ptr[i][j]);
+    }
+    printf("\n");
+  }
+}
+
+void print_third_matrix(int (*ptr)[matrix_3_length], int rows, int columns)
+{
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      printf("%d ", ptr[i][j]);
+    }
+    printf("\n");
+  }
+}
+
+/*
+  add two matrix, matrix_1 is replaced with the resulting addition
+*/
+void add(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int rows, int columns)
+{
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      matrix_1[i][j] = matrix_1[i][j] + matrix_2[i][j];
+    }
+  }
+}
+
+/*
+  subtract two matrix, matrix_1 is replaced with the resulting subtraction.
+  'direction' will decide which matrix is subtracted by which
+*/
+void subtract(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int rows, int columns, int direction)
+{
+  if (direction == 1)
+  {
+    for (int i = 0; i < rows; i++)
+    {
+      for (int j = 0; j < columns; j++)
+      {
+        matrix_1[i][j] = matrix_1[i][j] - matrix_2[i][j];
+      }
+    }
+  }
+  else
+  {
+    for (int i = 0; i < rows; i++)
+    {
+      for (int j = 0; j < columns; j++)
+      {
+        matrix_1[i][j] = matrix_2[i][j] - matrix_1[i][j];
+      }
+    }
+  }
 }
 
 void scanMatrix()
@@ -99,6 +204,9 @@ int main()
   scanf("%d", &row);
   int col = 0;
   scanf("%d", &col);
+
+  int(*ptr1)[col];
+
   int matrix_A[row][col];
   for (int i = 0; i < row; i++)
   {
@@ -107,12 +215,18 @@ int main()
       scanf("%d", &matrix_A[i][j]);
     }
   }
+  ptr1 = matrix_A;
+  matrix_1_length = col;
+  // print_first_matrix(ptr1, row, col);
 
   // ------------------ Matrix B
   row = 0;
   scanf("%d", &row);
   col = 0;
   scanf("%d", &col);
+
+  int(*ptr2)[col];
+
   int matrix_B[row][col];
   for (int i = 0; i < row; i++)
   {
@@ -122,12 +236,22 @@ int main()
     }
   }
 
+  ptr2 = matrix_B;
+  matrix_2_length = col;
+  // print_second_matrix(ptr2, row, col);
+  subtract(ptr1, ptr2, row, col, 0);
+  print_first_matrix(ptr1, row, col);
+
   // ------------------ Matrix C
-  if (totalMatrix >= 3) {
+  if (totalMatrix >= 3)
+  {
     row = 0;
     scanf("%d", &row);
     col = 0;
     scanf("%d", &col);
+
+    int(*ptr3)[col];
+
     int matrix_C[row][col];
     for (int i = 0; i < row; i++)
     {
@@ -136,12 +260,15 @@ int main()
         scanf("%d", &matrix_C[i][j]);
       }
     }
-    // printf("%s", "3");
 
+    ptr3 = matrix_C;
+    matrix_3_length = col;
+    print_third_matrix(ptr3, row, col);
   }
 
-    // ------------------ Matrix D
-  if (totalMatrix >= 4) {
+  // ------------------ Matrix D
+  if (totalMatrix >= 4)
+  {
     row = 0;
     scanf("%d", &row);
     col = 0;
@@ -155,11 +282,11 @@ int main()
       }
     }
     // printf("%s", "4");
-
   }
 
-    // ------------------ Matrix E
-  if (totalMatrix >= 5) {
+  // ------------------ Matrix E
+  if (totalMatrix >= 5)
+  {
     row = 0;
     scanf("%d", &row);
     col = 0;
@@ -174,11 +301,11 @@ int main()
     }
     // printf("%s", "5");
     // printf("%d", matrix_E[325][459]);
-
   }
 
-    // ------------------ Matrix F
-  if (totalMatrix >= 6) {
+  // ------------------ Matrix F
+  if (totalMatrix >= 6)
+  {
     row = 0;
     scanf("%d", &row);
     col = 0;
@@ -193,8 +320,9 @@ int main()
     }
   }
 
-    // ------------------ Matrix G
-  if (totalMatrix >= 7) {
+  // ------------------ Matrix G
+  if (totalMatrix >= 7)
+  {
     row = 0;
     scanf("%d", &row);
     col = 0;
@@ -209,8 +337,9 @@ int main()
     }
   }
 
-    // ------------------ Matrix H
-  if (totalMatrix >= 8) {
+  // ------------------ Matrix H
+  if (totalMatrix >= 8)
+  {
     row = 0;
     scanf("%d", &row);
     col = 0;
@@ -225,8 +354,9 @@ int main()
     }
   }
 
-    // ------------------ Matrix I
-  if (totalMatrix >= 9) {
+  // ------------------ Matrix I
+  if (totalMatrix >= 9)
+  {
     row = 0;
     scanf("%d", &row);
     col = 0;
@@ -241,8 +371,9 @@ int main()
     }
   }
 
-    // ------------------ Matrix J
-  if (totalMatrix >= 10) {
+  // ------------------ Matrix J
+  if (totalMatrix >= 10)
+  {
     row = 0;
     scanf("%d", &row);
     col = 0;
@@ -262,8 +393,6 @@ int main()
   // if (totalMatrix >= 3) {
   //   printf("%d", matrix_E[0][0]);
   // }
-
-  
 
   return 126;
 }
