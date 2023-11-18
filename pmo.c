@@ -200,7 +200,180 @@ void scanMatrix()
 int main()
 {
   scanStatement();
-  scanMatrix();
-  return 121;
+  // scanMatrix();
+
+  //// --------------- Scan all the matrix ---------------------- /////
+  // ------------------ Matrix A
+  int row = 0;
+  scanf("%d", &row);
+  int col = 0;
+  scanf("%d", &col);
+  int matrix_A[row][col];
+  for (int i = 0; i < row; i++)
+  {
+    for (int j = 0; j < col; j++)
+    {
+      scanf("%d", &matrix_A[i][j]);
+    }
+  }
+
+  // ------------------ Matrix B
+  row = 0;
+  scanf("%d", &row);
+  col = 0;
+  scanf("%d", &col);
+  int matrix_B[row][col];
+  for (int i = 0; i < row; i++)
+  {
+    for (int j = 0; j < col; j++)
+    {
+      scanf("%d", &matrix_B[i][j]);
+    }
+  }
+
+  // ------------------ Matrix C
+  if (totalMatrix >= 3) {
+    row = 0;
+    scanf("%d", &row);
+    col = 0;
+    scanf("%d", &col);
+    int matrix_C[row][col];
+    for (int i = 0; i < row; i++)
+    {
+      for (int j = 0; j < col; j++)
+      {
+        scanf("%d", &matrix_C[i][j]);
+      }
+    }
+    // printf("%s", "3");
+
+  }
+
+    // ------------------ Matrix D
+  if (totalMatrix >= 4) {
+    row = 0;
+    scanf("%d", &row);
+    col = 0;
+    scanf("%d", &col);
+    int matrix_D[row][col];
+    for (int i = 0; i < row; i++)
+    {
+      for (int j = 0; j < col; j++)
+      {
+        scanf("%d", &matrix_D[i][j]);
+      }
+    }
+    // printf("%s", "4");
+
+  }
+
+    // ------------------ Matrix E
+  if (totalMatrix >= 5) {
+    row = 0;
+    scanf("%d", &row);
+    col = 0;
+    scanf("%d", &col);
+    int matrix_E[row][col];
+    for (int i = 0; i < row; i++)
+    {
+      for (int j = 0; j < col; j++)
+      {
+        scanf("%d", &matrix_E[i][j]);
+      }
+    }
+    // printf("%s", "5");
+    // printf("%d", matrix_E[325][459]);
+
+  }
+
+    // ------------------ Matrix F
+  if (totalMatrix >= 6) {
+    row = 0;
+    scanf("%d", &row);
+    col = 0;
+    scanf("%d", &col);
+    int matrix_F[row][col];
+    for (int i = 0; i < row; i++)
+    {
+      for (int j = 0; j < col; j++)
+      {
+        scanf("%d", &matrix_F[i][j]);
+      }
+    }
+  }
+
+    // ------------------ Matrix G
+  if (totalMatrix >= 7) {
+    row = 0;
+    scanf("%d", &row);
+    col = 0;
+    scanf("%d", &col);
+    int matrix_G[row][col];
+    for (int i = 0; i < row; i++)
+    {
+      for (int j = 0; j < col; j++)
+      {
+        scanf("%d", &matrix_G[i][j]);
+      }
+    }
+  }
+
+    // ------------------ Matrix H
+  if (totalMatrix >= 8) {
+    row = 0;
+    scanf("%d", &row);
+    col = 0;
+    scanf("%d", &col);
+    int matrix_H[row][col];
+    for (int i = 0; i < row; i++)
+    {
+      for (int j = 0; j < col; j++)
+      {
+        scanf("%d", &matrix_H[i][j]);
+      }
+    }
+  }
+
+    // ------------------ Matrix I
+  if (totalMatrix >= 9) {
+    row = 0;
+    scanf("%d", &row);
+    col = 0;
+    scanf("%d", &col);
+    int matrix_I[row][col];
+    for (int i = 0; i < row; i++)
+    {
+      for (int j = 0; j < col; j++)
+      {
+        scanf("%d", &matrix_I[i][j]);
+      }
+    }
+  }
+
+    // ------------------ Matrix J
+  if (totalMatrix >= 10) {
+    row = 0;
+    scanf("%d", &row);
+    col = 0;
+    scanf("%d", &col);
+    int matrix_J[row][col];
+    for (int i = 0; i < row; i++)
+    {
+      for (int j = 0; j < col; j++)
+      {
+        scanf("%d", &matrix_J[i][j]);
+      }
+    }
+  }
+
+  //// --------------- Scan all the matrix ---------------------- /////
+
+  // if (totalMatrix >= 3) {
+  //   printf("%d", matrix_E[0][0]);
+  // }
+
+  
+
+  return 126;
 }
 ////////////////////////////////////////////////////////////////////////////////
