@@ -39,30 +39,31 @@ char matrix[11];
   matrix count
 */
 int totalMatrix = 0;
-typedef struct {
+typedef struct
+{
   int rows;
   int cols;
-  int** data;
+  int **data;
 } Matrix;
 
-typedef struct{
-  Matrix* matrix;
+typedef struct
+{
+  Matrix *matrix;
   char operation;
 } Expression;
 
-typedef struct{
-  Expression* expressions;
+typedef struct
+{
+  Expression *expressions;
   int top;
   int capacity;
 } Stack;
 
-
-
 struct arg
 {
-  Matrix* matrix_1;
-  Matrix* matrix_2;
-  Matrix* matrix_result;
+  Matrix *matrix_1;
+  Matrix *matrix_2;
+  Matrix *matrix_result;
   int i;
   int j;
 };
@@ -100,17 +101,19 @@ void scanStatement()
   // printf("%d", totalMatrix);
 }
 
-void printMatrix(Matrix* matrix) {
+void printMatrix(Matrix *matrix)
+{
   printf("%d\t%d\n", matrix->rows, matrix->cols);
-  for (int m = 0; m < matrix->rows; m++) {
-      for (int n = 0; n < matrix->cols; n++) {
-          printf("%d\t", matrix->data[m][n]);
-      }
-      printf("\n");
+  for (int m = 0; m < matrix->rows; m++)
+  {
+    for (int n = 0; n < matrix->cols; n++)
+    {
+      printf("%d\t", matrix->data[m][n]);
+    }
+    printf("\n");
   }
   printf("\n");
 }
-
 
 /*
 arguments struct are:
@@ -119,8 +122,8 @@ int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int i, int c
 void *addFunc(void *args)
 {
   struct arg *params = (struct arg *)args;
-  Matrix* matrix_1 = params->matrix_1;
-  Matrix* matrix_2 = params->matrix_2;
+  Matrix *matrix_1 = params->matrix_1;
+  Matrix *matrix_2 = params->matrix_2;
   int i = params->i;
 
   for (int j = 0; j < matrix_1->cols; j++)
@@ -133,7 +136,7 @@ void *addFunc(void *args)
 /*
   add two matrix, matrix_1 is replaced with the resulting addition
 */
-void add(Matrix* matrix_1, Matrix* matrix_2)
+void add(Matrix *matrix_1, Matrix *matrix_2)
 {
   pthread_t thr[matrix_1->rows];
   struct arg args[matrix_1->rows];
@@ -159,8 +162,8 @@ int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int i, int c
 void *subtractFunc(void *args)
 {
   struct arg *params = (struct arg *)args;
-  Matrix* matrix_1 = params->matrix_1;
-  Matrix* matrix_2 = params->matrix_2;
+  Matrix *matrix_1 = params->matrix_1;
+  Matrix *matrix_2 = params->matrix_2;
   int i = params->i;
   int columns = matrix_1->cols;
 
@@ -175,7 +178,7 @@ void *subtractFunc(void *args)
 /*
   subtract two matrix, matrix_1 is replaced with the resulting subtraction
 */
-void subtract(Matrix* matrix_1, Matrix* matrix_2)
+void subtract(Matrix *matrix_1, Matrix *matrix_2)
 {
   pthread_t thr[matrix_1->rows];
   struct arg args[matrix_1->rows];
@@ -194,21 +197,19 @@ void subtract(Matrix* matrix_1, Matrix* matrix_2)
   }
 }
 
-
-
 void *multiplyFunc(void *args)
 {
-    struct arg *params = (struct arg *)args;
-  Matrix* matrix_1 = params->matrix_1;
-  Matrix* matrix_2 = params->matrix_2;
-  Matrix* matrix_result = params->matrix_result;
+  struct arg *params = (struct arg *)args;
+  Matrix *matrix_1 = params->matrix_1;
+  Matrix *matrix_2 = params->matrix_2;
+  Matrix *matrix_result = params->matrix_result;
   int i = params->i;
   for (int j = 0; j < matrix_2->cols; j++)
   {
     for (int p = 0; p < matrix_1->cols; p++)
     {
       matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
-    }  
+    }
   }
   return NULL;
 }
@@ -216,7 +217,7 @@ void *multiplyFunc(void *args)
   Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
   These two are refered as 'p' in the document
 */
-void multiply_multithread(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
+void multiply_multithread(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_result)
 {
   pthread_t thr[matrix_1->rows];
   struct arg args[matrix_1->rows];
@@ -234,7 +235,7 @@ void multiply_multithread(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_res
   }
 }
 
-void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
+void multiply(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_result)
 {
   for (int i = 0; i < matrix_1->rows; i++)
   {
@@ -243,79 +244,83 @@ void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
       for (int p = 0; p < matrix_1->cols; p++)
       {
         matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
-      }  
-    } 
+      }
+    }
   }
 }
 
 /////////////////////////////////////////////////////////////////////////////////
 
-
-Matrix* initMatrix(int rows, int cols)
+Matrix *initMatrix(int rows, int cols)
 {
-    // Allocate memory for the matrix structure
-    Matrix* matrix = (Matrix*)malloc(sizeof(Matrix));
-    
-    // Set the number of rows and columns
-    matrix->rows = rows;
-    matrix->cols = cols;
-    
-    // Allocate memory for the matrix data
-    matrix->data = (int**)malloc(rows * sizeof(int*));
-    for (int i = 0; i < rows; i++) {
-        matrix->data[i] = (int*)malloc(cols * sizeof(int));
-    }
-    
-    return matrix;
+  // Allocate memory for the matrix structure
+  Matrix *matrix = (Matrix *)malloc(sizeof(Matrix));
+
+  // Set the number of rows and columns
+  matrix->rows = rows;
+  matrix->cols = cols;
+
+  // Allocate memory for the matrix data
+  matrix->data = (int **)malloc(rows * sizeof(int *));
+  for (int i = 0; i < rows; i++)
+  {
+    matrix->data[i] = (int *)malloc(cols * sizeof(int));
+  }
+
+  return matrix;
 }
 
-void freeMatrix(Matrix* matrix)
+void freeMatrix(Matrix *matrix)
 {
-    if (matrix == NULL) return;
-    
-    // Free the memory for the matrix data
-    for (int i = 0; i < matrix->rows; i++) {
-        free(matrix->data[i]);
-    }
-    free(matrix->data);
-    
-    // Free the memory for the matrix structure
-    free(matrix);
+  if (matrix == NULL)
+    return;
+
+  // Free the memory for the matrix data
+  for (int i = 0; i < matrix->rows; i++)
+  {
+    free(matrix->data[i]);
+  }
+  free(matrix->data);
+
+  // Free the memory for the matrix structure
+  free(matrix);
 }
 
-Matrix* readMatrix(int rows, int cols)
+Matrix *readMatrix(int rows, int cols)
 {
-    Matrix* matrix = initMatrix(rows, cols);
-    
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            scanf("%d", &(matrix->data[i][j]));
-        }
+  Matrix *matrix = initMatrix(rows, cols);
+
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < cols; j++)
+    {
+      scanf("%d", &(matrix->data[i][j]));
     }
-    
-    return matrix;
+  }
+
+  return matrix;
 }
 
-Stack* createStack(int capacity)
+Stack *createStack(int capacity)
 {
-  Stack* stack = (Stack*)malloc(capacity * sizeof(Stack));
-  stack->expressions = (Expression*)malloc(capacity * sizeof(Expression));
+  Stack *stack = (Stack *)malloc(capacity * sizeof(Stack));
+  stack->expressions = (Expression *)malloc(capacity * sizeof(Expression));
   stack->top = -1;
   stack->capacity = capacity;
   return stack;
 }
 
-int isStackEmpty(Stack* stack)
+int isStackEmpty(Stack *stack)
 {
-  return stack->top ==-1;
+  return stack->top == -1;
 }
 
-int isStackFull(Stack* stack)
+int isStackFull(Stack *stack)
 {
-  return stack->top == stack->capacity -1;
+  return stack->top == stack->capacity - 1;
 }
 
-void push(Stack* stack, Expression expression)
+void push(Stack *stack, Expression expression)
 {
   if (isStackFull(stack))
   {
@@ -325,7 +330,7 @@ void push(Stack* stack, Expression expression)
   stack->expressions[++stack->top] = expression;
 }
 
-Expression pop(Stack* stack)
+Expression pop(Stack *stack)
 {
   if (isStackEmpty(stack))
   {
@@ -338,9 +343,9 @@ Expression pop(Stack* stack)
   return stack->expressions[stack->top--];
 }
 
-void freeStack(Stack* stack)
+void freeStack(Stack *stack)
 {
-  for (int i = 0; i <= stack -> top; i++)
+  for (int i = 0; i <= stack->top; i++)
   {
     freeMatrix(stack->expressions[i].matrix);
   }
@@ -357,24 +362,26 @@ int main()
 
   stack.capacity = totalMatrix;
   stack.top = -1;
-  stack.expressions = (Expression*)malloc(stack.capacity * sizeof(Expression));
+  stack.expressions = (Expression *)malloc(stack.capacity * sizeof(Expression));
 
   // Create matrices
-  Matrix* matrices[totalMatrix];
+  Matrix *matrices[totalMatrix];
   for (int i = 0; i < totalMatrix; i++)
   {
     int rows, cols;
     scanf("%d\t%d", &rows, &cols);
 
-    Matrix* matrix = initMatrix(rows,cols);
-    for (int m = 0; m < rows; m++){
-      for (int n = 0; n < cols; n++){
+    Matrix *matrix = initMatrix(rows, cols);
+    for (int m = 0; m < rows; m++)
+    {
+      for (int n = 0; n < cols; n++)
+      {
         scanf("%d", &(matrix->data[m][n]));
       }
     }
     matrices[i] = matrix;
   }
-    // Assign matrices and operations to expressions in the stack
+  // Assign matrices and operations to expressions in the stack
   for (int i = 0; i < stack.capacity; i++)
   {
     stack.expressions[i].matrix = matrices[i];
@@ -392,12 +399,12 @@ int main()
   // {
   //   subtract(matrices[0], matrices[1]);
   //   printMatrix(matrices[0]);
-  // } 
+  // }
   // else if (operation[0] == '*')  {
 
   //   Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
 
-  //   multiply(matrices[0], matrices[1], matrix_result);
+  // multiply_multithread(matrices[0], matrices[1], matrix_result);
   //   printMatrix(matrix_result);
   // }
 
@@ -405,19 +412,19 @@ int main()
   {
     if (stack.expressions[i].operation == '*')
     {
-      Matrix* matrix_result = (Matrix*)malloc(sizeof(Matrix));
+      Matrix *matrix_result = (Matrix *)malloc(sizeof(Matrix));
       multiply(stack.expressions[i].matrix, stack.expressions[i + 1].matrix, matrix_result);
       stack.expressions[i + 1].matrix = matrix_result;
       i++;
     }
     else if (stack.expressions[i].operation == '+')
     {
-      add(stack.expressions[i].matrix, stack.expressions[i+1].matrix);
+      add(stack.expressions[i].matrix, stack.expressions[i + 1].matrix);
       i++;
     }
     else if (stack.expressions[i].operation == '-')
     {
-      subtract(stack.expressions[i].matrix, stack.expressions[i+1].matrix);
+      subtract(stack.expressions[i].matrix, stack.expressions[i + 1].matrix);
       i++;
     }
   }
