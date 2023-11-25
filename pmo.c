@@ -352,6 +352,38 @@ int isStackFull(Stack* stack)
   return stack->top == stack->capacity -1;
 }
 
+void push(Stack* stack, Expression expression)
+{
+  if (isStackFull(stack))
+  {
+    printf("Stack Overflow\n");
+    return;
+  }
+  stack->expressions[++stack->top] = expression;
+}
+
+Expression pop(Stack* stack)
+{
+  if (isStackEmpty(stack))
+  {
+    printf("Stack Underflow\n");
+    Expression emptyExpression;
+    emptyExpression.matrix = NULL;
+    emptyExpression.operation = "\0";
+    return emptyExpression;
+  }
+  return stack->expressions[stack->top--];
+}
+
+void freeStack(Stack* stack)
+{
+  for (int i = 0; i <= stack -> top; i++)
+  {
+    freeMatrix(stack->expressions[i].matrix);
+  }
+  free(stack->expressions);
+  free(stack);
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////MAIN FUNCTION//////////////////////////////////
