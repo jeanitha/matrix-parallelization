@@ -324,7 +324,8 @@ typedef struct {
   int** data;
 } Matrix;
 
-Matrix* initMatrix(int rows, int cols) {
+Matrix* initMatrix(int rows, int cols)
+{
     // Allocate memory for the matrix structure
     Matrix* matrix = (Matrix*)malloc(sizeof(Matrix));
     
@@ -340,7 +341,9 @@ Matrix* initMatrix(int rows, int cols) {
     
     return matrix;
 }
-void freeMatrix(Matrix* matrix) {
+
+void freeMatrix(Matrix* matrix)
+{
     if (matrix == NULL) return;
     
     // Free the memory for the matrix data
@@ -353,7 +356,8 @@ void freeMatrix(Matrix* matrix) {
     free(matrix);
 }
 
-Matrix* readMatrix(int rows, int cols) {
+Matrix* readMatrix(int rows, int cols)
+{
     Matrix* matrix = initMatrix(rows, cols);
     
     for (int i = 0; i < rows; i++) {
@@ -363,6 +367,36 @@ Matrix* readMatrix(int rows, int cols) {
     }
     
     return matrix;
+}
+
+typedef struct{
+  Matrix* matrix;
+  char operation;
+} Expression;
+
+typedef struct{
+  Expression* expressions;
+  int top;
+  int capacity;
+} Stack;
+
+Stack* createStack(int capacity)
+{
+  Stack* stack = (Stack*)malloc(capacity * sizeof(Stack));
+  stack->expressions = (Expression*)malloc(capacity * sizeof(Expression));
+  stack->top = -1;
+  stack->capacity = capacity;
+  return stack;
+}
+
+int isStackEmpty(Stack* stack)
+{
+  return stack->top ==-1;
+}
+
+int isStackFull(Stack* stack)
+{
+  return stack->top == stack->capacity -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
