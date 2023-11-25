@@ -68,6 +68,11 @@ char matrix[11];
   matrix count
 */
 int totalMatrix = 0;
+typedef struct {
+  int rows;
+  int cols;
+  int** data;
+} Matrix;
 
 typedef struct{
   Matrix* matrix;
@@ -80,16 +85,12 @@ typedef struct{
   int capacity;
 } Stack;
 
-typedef struct {
-  int rows;
-  int cols;
-  int** data;
-} Matrix;
+
 
 struct arg
 {
-  int (*matrix_1)[];
-  int (*matrix_2)[];
+  Matrix* matrix_1;
+  Matrix* matrix_2;
   int i;
   int columns;
   int direction;
@@ -148,14 +149,13 @@ int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int i, int c
 void *addFunc(void *args)
 {
   struct arg *params = (struct arg *)args;
-  int(*matrix_1)[matrix_1_column] = params->matrix_1;
-  int(*matrix_2)[matrix_2_column] = params->matrix_2;
+  Matrix* matrix_1 = params->matrix_1;
+  Matrix* matrix_2 = params->matrix_2;
   int i = params->i;
-  int columns = params->columns;
 
-  for (int j = 0; j < columns; j++)
+  for (int j = 0; j < matrix_1->cols; j++)
   {
-    matrix_1[i][j] = matrix_1[i][j] + matrix_2[i][j];
+    matrix_1->data[i][j] = matrix_1->data[i][j] + matrix_2->data[i][j];
   }
   return NULL;
 }
@@ -189,8 +189,8 @@ int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int i, int c
 void *subtractFunc(void *args)
 {
   struct arg *params = (struct arg *)args;
-  int(*matrix_1)[matrix_1_column] = params->matrix_1;
-  int(*matrix_2)[matrix_2_column] = params->matrix_2;
+  Matrix* matrix_1 = params->matrix_1;
+  Matrix* matrix_2 = params->matrix_2;
   int i = params->i;
   int columns = params->columns;
   int direction = params->direction;
@@ -199,74 +199,73 @@ void *subtractFunc(void *args)
   {
     for (int j = 0; j < columns; j++)
     {
-      matrix_1[i][j] = matrix_1[i][j] - matrix_2[i][j];
+      matrix_1->data[i][j] = matrix_1->data[i][j] - matrix_2->data[i][j];
     }
   }
   else
   {
     for (int j = 0; j < columns; j++)
     {
-      matrix_1[i][j] = matrix_2[i][j] - matrix_1[i][j];
+      matrix_1->data[i][j] = matrix_2->data[i][j] - matrix_1->data[i][j];
     }
   }
 
   return NULL;
 }
 
-
-void *multiplyFunc(void *args)
-{
-    struct arg *params = (struct arg *)args;
-  int(*matrix_1)[matrix_1_column] = params->matrix_1;
-  int(*matrix_2)[matrix_2_column] = params->matrix_2;
-  int i = params->i;
-  int columns = params->columns;
-  return NULL;
-}
 /*
   subtract two matrix, matrix_1 is replaced with the resulting subtraction
 */
-void subtract(int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int rows, int columns, int direction)
+void subtract(Matrix* matrix_1, Matrix* matrix_2, int direction)
 {
-  pthread_t thr[rows];
-  struct arg args[rows];
+  pthread_t thr[matrix_1->rows];
+  struct arg args[matrix_1->rows];
 
-  for (int i = 0; i < rows; i++)
+  for (int i = 0; i < matrix_1->rows; i++)
   {
     args[i].i = i;
-    args[i].columns = columns;
     args[i].matrix_1 = matrix_1;
     args[i].matrix_2 = matrix_2;
     args[i].direction = direction;
     pthread_create(&thr[i], NULL, subtractFunc, (void *)&args[i]);
   }
 
-  for (int i = 0; i < rows; i++)
+  for (int i = 0; i < matrix_1->rows; i++)
   {
     pthread_join(thr[i], NULL);
   }
 }
 
 
-/*
-  Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
-  These two are refered as 'p' in the document
-*/
-void multiply(int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int (*matrix_result)[finalMatrixcolumn], int rows_1, int columns_1, int columns_2)
-{
-  for (int i = 0; i < rows_1; i++)
-  {
-    for (int j = 0; j < columns_2; j++)
-    {
-      pthread_t thr[columns_1];
-      struct arg args[columns_1];
-      for (int p = 0; p < columns_1; p++)
-      {
-        matrix_result[i][j] = matrix_result[i][j] + matrix_1[i][p] * matrix_2[p][j];
-      }  
-    } 
-  }
-}
+
+// void *multiplyFunc(void *args)
+// {
+//     struct arg *params = (struct arg *)args;
+//   Matrix* matrix_1 = params->matrix_1;
+//   Matrix* matrix_2 = params->matrix_2;
+//   int i = params->i;
+//   int columns = params->columns;
+//   return NULL;
+// }
+// /*
+//   Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
+//   These two are refered as 'p' in the document
+// */
+// void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
+// {
+//   for (int i = 0; i < matrix_1->rows; i++)
+//   {
+//     for (int j = 0; j < matrix_2->cols; j++)
+//     {
+//       pthread_t thr[matrix_1->cols];
+//       struct arg args[matrix_1->cols];
+//       for (int p = 0; p < matrix_1->cols; p++)
+//       {
+//         matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
+//       }  
+//     } 
+//   }
+// }
 
 void scanMatrix()
 {
@@ -377,17 +376,17 @@ int main()
   }
 
   // Print all the matrix
-  for (int i = 0; i < totalMatrix; i++) {
-      Matrix* matrix = matrices[i];
-      printf("%d\t%d\n", matrix->rows, matrix->cols);
-      for (int m = 0; m < matrix->rows; m++) {
-          for (int n = 0; n < matrix->cols; n++) {
-              printf("%d\t", matrix->data[m][n]);
-          }
-          printf("\n");
-      }
-      printf("\n");
-  }
+  // for (int i = 0; i < totalMatrix; i++) {
+  //     Matrix* matrix = matrices[i];
+  //     printf("%d\t%d\n", matrix->rows, matrix->cols);
+  //     for (int m = 0; m < matrix->rows; m++) {
+  //         for (int n = 0; n < matrix->cols; n++) {
+  //             printf("%d\t", matrix->data[m][n]);
+  //         }
+  //         printf("\n");
+  //     }
+  //     printf("\n");
+  // }
 
 
   //// --------------- Scan all the matrix ---------------------- /////
