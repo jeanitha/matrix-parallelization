@@ -68,6 +68,32 @@ char matrix[11];
   matrix count
 */
 int totalMatrix = 0;
+
+typedef struct{
+  Matrix* matrix;
+  char operation;
+} Expression;
+
+typedef struct{
+  Expression* expressions;
+  int top;
+  int capacity;
+} Stack;
+
+typedef struct {
+  int rows;
+  int cols;
+  int** data;
+} Matrix;
+
+struct arg
+{
+  int (*matrix_1)[];
+  int (*matrix_2)[];
+  int i;
+  int columns;
+  int direction;
+};
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////FUNCTIONS///////////////////////////////////////
@@ -102,74 +128,18 @@ void scanStatement()
   // printf("%d", totalMatrix);
 }
 
-void printFinalMatrix(int (*ptr)[finalMatrixcolumn], int rows, int columns)
-{
-  printf("%d ", rows);
-  printf("%d", columns);
+void printMatrix(Matrix* matrix) {
+  printf("%d\t%d\n", matrix->rows, matrix->cols);
+  for (int m = 0; m < matrix->rows; m++) {
+      for (int n = 0; n < matrix->cols; n++) {
+          printf("%d\t", matrix->data[m][n]);
+      }
+      printf("\n");
+  }
   printf("\n");
-  for (int i = 0; i < rows; i++)
-  {
-    for (int j = 0; j < columns; j++)
-    {
-      printf("%d\t", ptr[i][j]);
-    }
-    printf("\n");
-  }
 }
 
-void print_first_matrix(int (*ptr)[matrix_1_column], int rows, int columns)
-{
-  printf("%d", rows);
-  printf("%s", " ");
-  printf("%d ", columns);
-  for (int i = 0; i < rows; i++)
-  {
-    for (int j = 0; j < columns; j++)
-    {
-      printf("%d\t", ptr[i][j]);
-    }
-    printf("\n");
-  }
-}
 
-void print_second_matrix(int (*ptr)[matrix_2_column], int rows, int columns)
-{
-  printf("%d", rows);
-  printf("%s", " ");
-  printf("%d ", columns);
-  for (int i = 0; i < rows; i++)
-  {
-    for (int j = 0; j < columns; j++)
-    {
-      printf("%d\t", ptr[i][j]);
-    }
-    printf("\n");
-  }
-}
-
-void print_third_matrix(int (*ptr)[matrix_3_column], int rows, int columns)
-{
-  printf("%d", rows);
-  printf("%s", " ");
-  printf("%d ", columns);
-  for (int i = 0; i < rows; i++)
-  {
-    for (int j = 0; j < columns; j++)
-    {
-      printf("%d\t", ptr[i][j]);
-    }
-    printf("\n");
-  }
-}
-
-struct arg
-{
-  int (*matrix_1)[];
-  int (*matrix_2)[];
-  int i;
-  int columns;
-  int direction;
-};
 
 /*
 arguments struct are:
@@ -193,21 +163,20 @@ void *addFunc(void *args)
 /*
   add two matrix, matrix_1 is replaced with the resulting addition
 */
-void add(int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int rows, int columns)
+void add(Matrix* matrix_1, Matrix* matrix_2)
 {
-  pthread_t thr[rows];
-  struct arg args[rows];
+  pthread_t thr[matrix_1->rows];
+  struct arg args[matrix_1->rows];
 
-  for (int i = 0; i < rows; i++)
+  for (int i = 0; i < matrix_1->rows; i++)
   {
     args[i].i = i;
-    args[i].columns = columns;
     args[i].matrix_1 = matrix_1;
     args[i].matrix_2 = matrix_2;
     pthread_create(&thr[i], NULL, addFunc, (void *)&args[i]);
   }
 
-  for (int i = 0; i < rows; i++)
+  for (int i = 0; i < matrix_1->rows; i++)
   {
     pthread_join(thr[i], NULL);
   }
@@ -318,11 +287,7 @@ void scanMatrix()
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-typedef struct {
-  int rows;
-  int cols;
-  int** data;
-} Matrix;
+
 
 Matrix* initMatrix(int rows, int cols)
 {
@@ -368,17 +333,6 @@ Matrix* readMatrix(int rows, int cols)
     
     return matrix;
 }
-
-typedef struct{
-  Matrix* matrix;
-  char operation;
-} Expression;
-
-typedef struct{
-  Expression* expressions;
-  int top;
-  int capacity;
-} Stack;
 
 Stack* createStack(int capacity)
 {
@@ -437,61 +391,28 @@ int main()
 
 
   //// --------------- Scan all the matrix ---------------------- /////
-  // ------------------ Matrix A ----------------------
-  scanf("%d", &matrix_1_row);
-  scanf("%d", &matrix_1_column);
-
-  int(*ptr1)[matrix_1_column];
-
-  int matrix_A[matrix_1_row][matrix_1_column];
-  for (int i = 0; i < matrix_1_row; i++)
-  {
-    for (int j = 0; j < matrix_1_column; j++)
-    {
-      scanf("%d", &matrix_A[i][j]);
-    }
-  }
-  ptr1 = matrix_A;
-  // print_first_matrix(ptr1, row, col);
-
-  // ------------------ Matrix B ----------------------
-  scanf("%d", &matrix_2_row);
-  scanf("%d", &matrix_2_column);
-
-  int(*ptr2)[matrix_2_column];
-
-  int matrix_B[matrix_2_row][matrix_2_column];
-  for (int i = 0; i < matrix_2_row; i++)
-  {
-    for (int j = 0; j < matrix_2_column; j++)
-    {
-      scanf("%d", &matrix_B[i][j]);
-    }
-  }
-
-  ptr2 = matrix_B;
-  // print_second_matrix(ptr2, row, col);
 
   if (operation[0] == '+')
   {
-    add(ptr1, ptr2, matrix_2_row, matrix_2_column);
-    print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
+    add(matrices[0], matrices[1]);
+    printMatrix(matrices[0]);
+    // print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
   }
-  else if (operation[0] == '-')
-  {
-    subtract(ptr1, ptr2, matrix_2_row, matrix_2_column, 1);
-    print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
-  } else if (operation[0] == '*')  {
-    int(*ptrX)[matrix_2_column];
+  // else if (operation[0] == '-')
+  // {
+  //   subtract(matrices[0], matrices[1], 1);
+  //   print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
+  // } else if (operation[0] == '*')  {
+  //   int(*ptrX)[matrix_2_column];
 
-    int matrix_X[matrix_1_row][matrix_2_column];
-    finalMatrixcolumn = matrix_2_column;
-    finalMatrixrow = matrix_1_row;
-    ptrX = matrix_X;
+  //   int matrix_X[matrix_1_row][matrix_2_column];
+  //   finalMatrixcolumn = matrix_2_column;
+  //   finalMatrixrow = matrix_1_row;
+  //   ptrX = matrix_X;
 
-    multiply(ptr1, ptr2, ptrX, matrix_1_row, matrix_1_column, matrix_2_column);
-    printFinalMatrix(ptrX, finalMatrixrow, finalMatrixcolumn);
-  }
+  //   multiply(ptr1, ptr2, ptrX, matrix_1_row, matrix_1_column, matrix_2_column);
+  //   printFinalMatrix(ptrX, finalMatrixrow, finalMatrixcolumn);
+  // }
 
   // print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
 
