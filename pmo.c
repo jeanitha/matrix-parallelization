@@ -203,11 +203,13 @@ void *multiplyFunc(void *args)
   Matrix* matrix_2 = params->matrix_2;
   Matrix* matrix_result = params->matrix_result;
   int i = params->i;
-  int j = params->j;
-  for (int p = 0; p < matrix_1->cols; p++)
+  for (int j = 0; j < matrix_2->cols; j++)
   {
-    matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
-  }  
+    for (int p = 0; p < matrix_1->cols; p++)
+    {
+      matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
+    }  
+  }
   return NULL;
 }
 /*
@@ -216,24 +218,19 @@ void *multiplyFunc(void *args)
 */
 void multiply_multithread(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
 {
+  pthread_t thr[matrix_1->rows];
+  struct arg args[matrix_1->rows];
   for (int i = 0; i < matrix_1->rows; i++)
   {
-    pthread_t thr[matrix_1->cols];
-
-    for (int j = 0; j < matrix_2->cols; j++)
-    {
-      struct arg args[matrix_1->cols];
-      args[i].i = i;
-      args[i].matrix_1 = matrix_1;
-      args[i].matrix_2 = matrix_2;
-      args[i].j = j;
-      args[i].matrix_result = matrix_result;
-      pthread_create(&thr[i], NULL, multiplyFunc, (void *)&args[i]);
-    } 
-    for (int j = 0; j < matrix_1->cols; j++)
-    {
-      pthread_join(thr[j], NULL);
-    }
+    args[i].i = i;
+    args[i].matrix_1 = matrix_1;
+    args[i].matrix_2 = matrix_2;
+    args[i].matrix_result = matrix_result;
+    pthread_create(&thr[i], NULL, multiplyFunc, (void *)&args[i]);
+  }
+  for (int i = 0; i < matrix_1->rows; i++)
+  {
+    pthread_join(thr[i], NULL);
   }
 }
 
@@ -402,7 +399,7 @@ int main()
 
     Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
 
-    multiply(matrices[0], matrices[1], matrix_result);
+    multiply_multithread(matrices[0], matrices[1], matrix_result);
     printMatrix(matrix_result);
   }
 
