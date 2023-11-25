@@ -36,6 +36,7 @@ char operation[11];
   It will be used on the printMatrix() function
 */
 int finalMatrixcolumn = 0;
+int finalMatrixrow = 0;
 int matrix_1_column = 0;
 int matrix_2_column = 0;
 int matrix_3_column = 0;
@@ -103,9 +104,9 @@ void scanStatement()
 
 void printFinalMatrix(int (*ptr)[finalMatrixcolumn], int rows, int columns)
 {
-  printf("%d", rows);
-  printf("%s", " ");
-  printf("%d ", columns);
+  printf("%d ", rows);
+  printf("%d", columns);
+  printf("\n");
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
@@ -243,6 +244,16 @@ void *subtractFunc(void *args)
   return NULL;
 }
 
+
+void *multiplyFunc(void *args)
+{
+    struct arg *params = (struct arg *)args;
+  int(*matrix_1)[matrix_1_column] = params->matrix_1;
+  int(*matrix_2)[matrix_2_column] = params->matrix_2;
+  int i = params->i;
+  int columns = params->columns;
+  return NULL;
+}
 /*
   subtract two matrix, matrix_1 is replaced with the resulting subtraction
 */
@@ -266,6 +277,8 @@ void subtract(int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column]
     pthread_join(thr[i], NULL);
   }
 }
+
+
 /*
   Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
   These two are refered as 'p' in the document
@@ -276,6 +289,8 @@ void multiply(int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column]
   {
     for (int j = 0; j < columns_2; j++)
     {
+      pthread_t thr[columns_1];
+      struct arg args[columns_1];
       for (int p = 0; p < columns_1; p++)
       {
         matrix_result[i][j] = matrix_result[i][j] + matrix_1[i][p] * matrix_2[p][j];
@@ -348,19 +363,27 @@ int main()
   if (operation[0] == '+')
   {
     add(ptr1, ptr2, matrix_2_row, matrix_2_column);
+    print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
   }
   else if (operation[0] == '-')
   {
     subtract(ptr1, ptr2, matrix_2_row, matrix_2_column, 1);
-  } else {
-    int(*ptrX)[matrix_1_column];
+    print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
+  } else if (operation[0] == '*')  {
+    int(*ptrX)[matrix_2_column];
 
-    int matrix_X[matrix_2_row][matrix_1_column];
+    int matrix_X[matrix_1_row][matrix_2_column];
+    finalMatrixcolumn = matrix_2_column;
+    finalMatrixrow = matrix_1_row;
+    ptrX = matrix_X;
+
+    multiply(ptr1, ptr2, ptrX, matrix_1_row, matrix_1_column, matrix_2_column);
+    printFinalMatrix(ptrX, finalMatrixrow, finalMatrixcolumn);
   }
 
-  print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
+  // print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
 
-  // need to replace row and col with each corresponding matrix_[n]_row and matrix_[n]_column
+  // // need to replace row and col with each corresponding matrix_[n]_row and matrix_[n]_column
   int row;
   int col;
   // ------------------ Matrix C ----------------------
