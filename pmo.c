@@ -389,17 +389,18 @@ int main()
   }
 
   // Print all the matrix
-for (int i = 0; i < totalMatrix; i++) {
-    Matrix* matrix = matrices[i];
-    printf("%d\t%d\n", matrix->rows, matrix->cols);
-    for (int m = 0; m < matrix->rows; m++) {
-        for (int n = 0; n < matrix->cols; n++) {
-            printf("%d\t", matrix->data[m][n]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
+  for (int i = 0; i < totalMatrix; i++) {
+      Matrix* matrix = matrices[i];
+      printf("%d\t%d\n", matrix->rows, matrix->cols);
+      for (int m = 0; m < matrix->rows; m++) {
+          for (int n = 0; n < matrix->cols; n++) {
+              printf("%d\t", matrix->data[m][n]);
+          }
+          printf("\n");
+      }
+      printf("\n");
+  }
+
 
   //// --------------- Scan all the matrix ---------------------- /////
   // ------------------ Matrix A ----------------------
@@ -614,6 +615,11 @@ for (int i = 0; i < totalMatrix; i++) {
   // if (totalMatrix >= 3) {
   //   printf("%d", matrix_E[0][0]);
   // }
+
+  // Clean up the matrices
+  for (int i = 0; i < totalMatrix; i++){
+    freeMatrix(matrices[i]);
+  }
 
   return 0;
 }
