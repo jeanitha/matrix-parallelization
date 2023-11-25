@@ -316,6 +316,55 @@ void scanMatrix()
   // printf("%d", current_matrix[79][88]);
   // print2DArray(current_matrix, row, col);
 }
+
+/////////////////////////////////////////////////////////////////////////////////
+typedef struct {
+  int rows;
+  int cols;
+  int** data;
+} Matrix;
+
+Matrix* initMatrix(int rows, int cols) {
+    // Allocate memory for the matrix structure
+    Matrix* matrix = (Matrix*)malloc(sizeof(Matrix));
+    
+    // Set the number of rows and columns
+    matrix->rows = rows;
+    matrix->cols = cols;
+    
+    // Allocate memory for the matrix data
+    matrix->data = (int**)malloc(rows * sizeof(int*));
+    for (int i = 0; i < rows; i++) {
+        matrix->data[i] = (int*)malloc(cols * sizeof(int));
+    }
+    
+    return matrix;
+}
+void freeMatrix(Matrix* matrix) {
+    if (matrix == NULL) return;
+    
+    // Free the memory for the matrix data
+    for (int i = 0; i < matrix->rows; i++) {
+        free(matrix->data[i]);
+    }
+    free(matrix->data);
+    
+    // Free the memory for the matrix structure
+    free(matrix);
+}
+
+Matrix* readMatrix(int rows, int cols) {
+    Matrix* matrix = initMatrix(rows, cols);
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            scanf("%d", &(matrix->data[i][j]));
+        }
+    }
+    
+    return matrix;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////MAIN FUNCTION//////////////////////////////////
@@ -323,6 +372,34 @@ int main()
 {
   scanStatement();
   // scanMatrix();
+
+  Matrix* matrices[totalMatrix];
+  for (int i = 0; i < totalMatrix; i++)
+  {
+    int rows, cols;
+    scanf("%d\t%d", &rows, &cols);
+
+    Matrix* matrix = initMatrix(rows,cols);
+    for (int m = 0; m < rows; m++){
+      for (int n = 0; n < cols; n++){
+        scanf("%d", &(matrix->data[m][n]));
+      }
+    }
+    matrices[i] = matrix;
+  }
+
+  // Print all the matrix
+for (int i = 0; i < totalMatrix; i++) {
+    Matrix* matrix = matrices[i];
+    printf("%d\t%d\n", matrix->rows, matrix->cols);
+    for (int m = 0; m < matrix->rows; m++) {
+        for (int n = 0; n < matrix->cols; n++) {
+            printf("%d\t", matrix->data[m][n]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
 
   //// --------------- Scan all the matrix ---------------------- /////
   // ------------------ Matrix A ----------------------
