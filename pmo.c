@@ -352,11 +352,9 @@ void freeStack(Stack* stack)
 /////////////////////////////////MAIN FUNCTION//////////////////////////////////
 int main()
 {
-  scanStatement();
-  // scanMatrix();
-  
-  // Create the Stack based on scanned statement
   Stack stack;
+  scanStatement();
+
   stack.capacity = totalMatrix;
   stack.top = -1;
   stack.expressions = (Expression*)malloc(stack.capacity * sizeof(Expression));
@@ -385,30 +383,47 @@ int main()
 
   //// --------------- Scan all the matrix ---------------------- /////
 
-  if (operation[0] == '+')
+  // if (operation[0] == '+')
+  // {
+  //   add(matrices[0], matrices[1]);
+  //   printMatrix(matrices[0]);
+  // }
+  // else if (operation[0] == '-')
+  // {
+  //   subtract(matrices[0], matrices[1]);
+  //   printMatrix(matrices[0]);
+  // } 
+  // else if (operation[0] == '*')  {
+
+  //   Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
+
+  //   multiply(matrices[0], matrices[1], matrix_result);
+  //   printMatrix(matrix_result);
+  // }
+
+  for (int i = 0; i < stack.capacity; i++)
   {
-    add(matrices[0], matrices[1]);
-    printMatrix(matrices[0]);
+    if (stack.expressions[i].operation == '*')
+    {
+      Matrix* matrix_result = (Matrix*)malloc(sizeof(Matrix));
+      multiply(stack.expressions[i].matrix, stack.expressions[i + 1].matrix, matrix_result);
+      stack.expressions[i + 1].matrix = matrix_result;
+      i++;
+    }
+    else if (stack.expressions[i].operation == '+')
+    {
+      add(stack.expressions[i].matrix, stack.expressions[i+1].matrix);
+      i++;
+    }
+    else if (stack.expressions[i].operation == '-')
+    {
+      subtract(stack.expressions[i].matrix, stack.expressions[i+1].matrix);
+      i++;
+    }
   }
-  else if (operation[0] == '-')
-  {
-    subtract(matrices[0], matrices[1]);
-    printMatrix(matrices[0]);
-  } 
-  else if (operation[0] == '*')  {
 
-    Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
-
-    multiply_multithread(matrices[0], matrices[1], matrix_result);
-    printMatrix(matrix_result);
-  }
-
+  printMatrix(stack.expressions[stack.capacity - 1].matrix);
   //// --------------- Scan all the matrix ---------------------- /////
-
-  // Clean up the matrices
-  for (int i = 0; i < totalMatrix; i++){
-    freeMatrix(matrices[i]);
-  }
 
   return 0;
 }
