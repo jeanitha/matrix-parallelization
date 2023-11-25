@@ -214,7 +214,7 @@ void *multiplyFunc(void *args)
   Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
   These two are refered as 'p' in the document
 */
-void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
+void multiply_multithread(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
 {
   for (int i = 0; i < matrix_1->rows; i++)
   {
@@ -234,6 +234,20 @@ void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
     {
       pthread_join(thr[j], NULL);
     }
+  }
+}
+
+void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
+{
+  for (int i = 0; i < matrix_1->rows; i++)
+  {
+    for (int j = 0; j < matrix_2->cols; j++)
+    {
+      for (int p = 0; p < matrix_1->cols; p++)
+      {
+        matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
+      }  
+    } 
   }
 }
 
@@ -368,7 +382,7 @@ int main()
     // Assign matrices and operations to expressions in the stack
   for (int i = 0; i < stack.capacity; i++)
   {
-    stack.expressions[i].matrix = &matrices[i];
+    stack.expressions[i].matrix = matrices[i];
     stack.expressions[i].operation = i < totalMatrix - 1 ? operation[i] : '\0';
   }
 
