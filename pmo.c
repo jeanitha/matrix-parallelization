@@ -86,13 +86,13 @@ void scanStatement()
 void printFinalMatrix(int (*ptr)[finalMatrixLength], int rows, int columns)
 {
   printf("%d", rows);
-  printf("%s"," ");
+  printf("%s", " ");
   printf("%d ", columns);
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
     {
-      printf("%d ", ptr[i][j]);
+      printf("%d\t", ptr[i][j]);
     }
     printf("\n");
   }
@@ -101,13 +101,13 @@ void printFinalMatrix(int (*ptr)[finalMatrixLength], int rows, int columns)
 void print_first_matrix(int (*ptr)[matrix_1_length], int rows, int columns)
 {
   printf("%d", rows);
-  printf("%s"," ");
+  printf("%s", " ");
   printf("%d ", columns);
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
     {
-      printf("%d ", ptr[i][j]);
+      printf("%d\t", ptr[i][j]);
     }
     printf("\n");
   }
@@ -116,13 +116,13 @@ void print_first_matrix(int (*ptr)[matrix_1_length], int rows, int columns)
 void print_second_matrix(int (*ptr)[matrix_2_length], int rows, int columns)
 {
   printf("%d", rows);
-  printf("%s"," ");
+  printf("%s", " ");
   printf("%d ", columns);
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
     {
-      printf("%d ", ptr[i][j]);
+      printf("%d\t", ptr[i][j]);
     }
     printf("\n");
   }
@@ -131,20 +131,44 @@ void print_second_matrix(int (*ptr)[matrix_2_length], int rows, int columns)
 void print_third_matrix(int (*ptr)[matrix_3_length], int rows, int columns)
 {
   printf("%d", rows);
-  printf("%s"," ");
-  printf("%d", columns);
+  printf("%s", " ");
+  printf("%d ", columns);
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
     {
-      printf("%d ", ptr[i][j]);
+      printf("%d\t", ptr[i][j]);
     }
     printf("\n");
   }
 }
 
-void addFunc(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int i, int j) {
-  matrix_1[i][j] = matrix_1[i][j] + matrix_2[i][j];
+struct arg
+{
+  int (*matrix_1)[];
+  int (*matrix_2)[];
+  int i;
+  int columns;
+  int direction;
+};
+
+/*
+arguments struct are:
+int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int i, int columns
+*/
+void *addFunc(void *args)
+{
+  struct arg *params = (struct arg *)args;
+  int(*matrix_1)[matrix_1_length] = params->matrix_1;
+  int(*matrix_2)[matrix_2_length] = params->matrix_2;
+  int i = params->i;
+  int columns = params->columns;
+
+  for (int j = 0; j < columns; j++)
+  {
+    matrix_1[i][j] = matrix_1[i][j] + matrix_2[i][j];
+  }
+  return NULL;
 }
 
 /*
@@ -152,40 +176,77 @@ void addFunc(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length],
 */
 void add(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int rows, int columns)
 {
+  pthread_t thr[rows];
+  struct arg args[rows];
 
   for (int i = 0; i < rows; i++)
   {
-    for (int j = 0; j < columns; j++)
-    {
-      addFunc(matrix_1, matrix_2, i,j);
-    }
+    args[i].i = i;
+    args[i].columns = columns;
+    args[i].matrix_1 = matrix_1;
+    args[i].matrix_2 = matrix_2;
+    pthread_create(&thr[i], NULL, addFunc, (void *)&args[i]);
   }
-}
 
-void subtractFunc(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int i, int j, int direction)
-{
-  if (direction == 1)
+  for (int i = 0; i < rows; i++)
   {
-    matrix_1[i][j] = matrix_1[i][j] - matrix_2[i][j];
-  } else {
-    matrix_1[i][j] = matrix_2[i][j] - matrix_1[i][j];
+    pthread_join(thr[i], NULL);
   }
-  
 }
 
 /*
-  subtract two matrix, matrix_1 is replaced with the resulting subtraction.
-  'direction' will decide which matrix is subtracted by which
+arguments struct are:
+int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int i, int columns
+*/
+void *subtractFunc(void *args)
+{
+  struct arg *params = (struct arg *)args;
+  int(*matrix_1)[matrix_1_length] = params->matrix_1;
+  int(*matrix_2)[matrix_2_length] = params->matrix_2;
+  int i = params->i;
+  int columns = params->columns;
+  int direction = params->direction;
+
+  if (direction == 1)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      matrix_1[i][j] = matrix_1[i][j] - matrix_2[i][j];
+    }
+  }
+  else
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      matrix_1[i][j] = matrix_2[i][j] - matrix_1[i][j];
+    }
+  }
+
+  return NULL;
+}
+
+/*
+  subtract two matrix, matrix_1 is replaced with the resulting subtraction
 */
 void subtract(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int rows, int columns, int direction)
 {
-    for (int i = 0; i < rows; i++)
-    {
-      for (int j = 0; j < columns; j++)
-      {
-        subtractFunc(matrix_1, matrix_2, i, j, direction);
-      }
-    }
+  pthread_t thr[rows];
+  struct arg args[rows];
+
+  for (int i = 0; i < rows; i++)
+  {
+    args[i].i = i;
+    args[i].columns = columns;
+    args[i].matrix_1 = matrix_1;
+    args[i].matrix_2 = matrix_2;
+    args[i].direction = direction;
+    pthread_create(&thr[i], NULL, subtractFunc, (void *)&args[i]);
+  }
+
+  for (int i = 0; i < rows; i++)
+  {
+    pthread_join(thr[i], NULL);
+  }
 }
 
 void scanMatrix()
@@ -214,7 +275,7 @@ int main()
   // scanMatrix();
 
   //// --------------- Scan all the matrix ---------------------- /////
-  // ------------------ Matrix A
+  // ------------------ Matrix A ----------------------
   int row = 0;
   scanf("%d", &row);
   int col = 0;
@@ -234,7 +295,7 @@ int main()
   matrix_1_length = col;
   // print_first_matrix(ptr1, row, col);
 
-  // ------------------ Matrix B
+  // ------------------ Matrix B ----------------------
   row = 0;
   scanf("%d", &row);
   col = 0;
@@ -254,11 +315,20 @@ int main()
   ptr2 = matrix_B;
   matrix_2_length = col;
   // print_second_matrix(ptr2, row, col);
-  subtract(ptr1, ptr2, row, col, 1);
-  // add(ptr1, ptr2, row, col);
+  // subtract(ptr1, ptr2, row, col, 0);
+
+  if (operation[0] == '+')
+  {
+    add(ptr1, ptr2, row, col);
+  }
+  else if (operation[0] == '-')
+  {
+    subtract(ptr1, ptr2, row, col, 1);
+  }
+
   print_first_matrix(ptr1, row, col);
 
-  // ------------------ Matrix C
+  // ------------------ Matrix C ----------------------
   if (totalMatrix >= 3)
   {
     row = 0;
@@ -282,7 +352,7 @@ int main()
     print_third_matrix(ptr3, row, col);
   }
 
-  // ------------------ Matrix D
+  // ------------------ Matrix D ----------------------
   if (totalMatrix >= 4)
   {
     row = 0;
@@ -300,7 +370,7 @@ int main()
     // printf("%s", "4");
   }
 
-  // ------------------ Matrix E
+  // ------------------ Matrix E ----------------------
   if (totalMatrix >= 5)
   {
     row = 0;
@@ -319,7 +389,7 @@ int main()
     // printf("%d", matrix_E[325][459]);
   }
 
-  // ------------------ Matrix F
+  // ------------------ Matrix F ----------------------
   if (totalMatrix >= 6)
   {
     row = 0;
@@ -336,7 +406,7 @@ int main()
     }
   }
 
-  // ------------------ Matrix G
+  // ------------------ Matrix G ----------------------
   if (totalMatrix >= 7)
   {
     row = 0;
@@ -353,7 +423,7 @@ int main()
     }
   }
 
-  // ------------------ Matrix H
+  // ------------------ Matrix H ----------------------
   if (totalMatrix >= 8)
   {
     row = 0;
@@ -370,7 +440,7 @@ int main()
     }
   }
 
-  // ------------------ Matrix I
+  // ------------------ Matrix I ----------------------
   if (totalMatrix >= 9)
   {
     row = 0;
@@ -387,7 +457,7 @@ int main()
     }
   }
 
-  // ------------------ Matrix J
+  // ------------------ Matrix J ----------------------
   if (totalMatrix >= 10)
   {
     row = 0;
