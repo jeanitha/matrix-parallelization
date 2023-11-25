@@ -316,7 +316,7 @@ Expression pop(Stack* stack)
     printf("Stack Underflow\n");
     Expression emptyExpression;
     emptyExpression.matrix = NULL;
-    emptyExpression.operation = "\0";
+    emptyExpression.operation = '\0';
     return emptyExpression;
   }
   return stack->expressions[stack->top--];
