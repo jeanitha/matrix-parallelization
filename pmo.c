@@ -391,7 +391,14 @@ int main()
 {
   scanStatement();
   // scanMatrix();
+  
+  // Create the Stack based on scanned statement
+  Stack stack;
+  stack.capacity = totalMatrix;
+  stack.top = -1;
+  stack.expressions = (Expression*)malloc(stack.capacity * sizeof(Expression));
 
+  // Create matrices
   Matrix* matrices[totalMatrix];
   for (int i = 0; i < totalMatrix; i++)
   {
@@ -406,6 +413,14 @@ int main()
     }
     matrices[i] = matrix;
   }
+
+  // Assign matrices and operations to expressions in the stack
+  for (int i = 0; i < stack.capacity; i++)
+  {
+    stack.expressions[i].matrix = &matrices[i];
+    stack.expressions[i].operation = i < totalMatrix - 1 ? operation[i] : '\0';
+  }
+
 
   // Print all the matrix
   // for (int i = 0; i < totalMatrix; i++) {
