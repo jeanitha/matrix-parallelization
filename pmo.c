@@ -85,6 +85,9 @@ void scanStatement()
 
 void printFinalMatrix(int (*ptr)[finalMatrixLength], int rows, int columns)
 {
+  printf("%d", rows);
+  printf("%s"," ");
+  printf("%d ", columns);
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
@@ -97,6 +100,9 @@ void printFinalMatrix(int (*ptr)[finalMatrixLength], int rows, int columns)
 
 void print_first_matrix(int (*ptr)[matrix_1_length], int rows, int columns)
 {
+  printf("%d", rows);
+  printf("%s"," ");
+  printf("%d ", columns);
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
@@ -109,6 +115,9 @@ void print_first_matrix(int (*ptr)[matrix_1_length], int rows, int columns)
 
 void print_second_matrix(int (*ptr)[matrix_2_length], int rows, int columns)
 {
+  printf("%d", rows);
+  printf("%s"," ");
+  printf("%d ", columns);
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
@@ -121,6 +130,9 @@ void print_second_matrix(int (*ptr)[matrix_2_length], int rows, int columns)
 
 void print_third_matrix(int (*ptr)[matrix_3_length], int rows, int columns)
 {
+  printf("%d", rows);
+  printf("%s"," ");
+  printf("%d", columns);
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
@@ -131,18 +143,34 @@ void print_third_matrix(int (*ptr)[matrix_3_length], int rows, int columns)
   }
 }
 
+void addFunc(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int i, int j) {
+  matrix_1[i][j] = matrix_1[i][j] + matrix_2[i][j];
+}
+
 /*
   add two matrix, matrix_1 is replaced with the resulting addition
 */
 void add(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int rows, int columns)
 {
+
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
     {
-      matrix_1[i][j] = matrix_1[i][j] + matrix_2[i][j];
+      addFunc(matrix_1, matrix_2, i,j);
     }
   }
+}
+
+void subtractFunc(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int i, int j, int direction)
+{
+  if (direction == 1)
+  {
+    matrix_1[i][j] = matrix_1[i][j] - matrix_2[i][j];
+  } else {
+    matrix_1[i][j] = matrix_2[i][j] - matrix_1[i][j];
+  }
+  
 }
 
 /*
@@ -151,26 +179,13 @@ void add(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int
 */
 void subtract(int (*matrix_1)[matrix_1_length], int (*matrix_2)[matrix_2_length], int rows, int columns, int direction)
 {
-  if (direction == 1)
-  {
     for (int i = 0; i < rows; i++)
     {
       for (int j = 0; j < columns; j++)
       {
-        matrix_1[i][j] = matrix_1[i][j] - matrix_2[i][j];
+        subtractFunc(matrix_1, matrix_2, i, j, direction);
       }
     }
-  }
-  else
-  {
-    for (int i = 0; i < rows; i++)
-    {
-      for (int j = 0; j < columns; j++)
-      {
-        matrix_1[i][j] = matrix_2[i][j] - matrix_1[i][j];
-      }
-    }
-  }
 }
 
 void scanMatrix()
@@ -239,7 +254,8 @@ int main()
   ptr2 = matrix_B;
   matrix_2_length = col;
   // print_second_matrix(ptr2, row, col);
-  subtract(ptr1, ptr2, row, col, 0);
+  subtract(ptr1, ptr2, row, col, 1);
+  // add(ptr1, ptr2, row, col);
   print_first_matrix(ptr1, row, col);
 
   // ------------------ Matrix C
@@ -394,6 +410,6 @@ int main()
   //   printf("%d", matrix_E[0][0]);
   // }
 
-  return 126;
+  return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////
