@@ -218,9 +218,10 @@ void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
 {
   for (int i = 0; i < matrix_1->rows; i++)
   {
+    pthread_t thr[matrix_1->cols];
+
     for (int j = 0; j < matrix_2->cols; j++)
     {
-      pthread_t thr[matrix_1->cols];
       struct arg args[matrix_1->cols];
       args[i].i = i;
       args[i].matrix_1 = matrix_1;
@@ -229,6 +230,10 @@ void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
       args[i].matrix_result = matrix_result;
       pthread_create(&thr[i], NULL, multiplyFunc, (void *)&args[i]);
     } 
+    for (int j = 0; j < matrix_1->cols; j++)
+    {
+      pthread_join(thr[j], NULL);
+    }
   }
 }
 
@@ -359,6 +364,12 @@ int main()
       }
     }
     matrices[i] = matrix;
+  }
+    // Assign matrices and operations to expressions in the stack
+  for (int i = 0; i < stack.capacity; i++)
+  {
+    stack.expressions[i].matrix = &matrices[i];
+    stack.expressions[i].operation = i < totalMatrix - 1 ? operation[i] : '\0';
   }
 
   //// --------------- Scan all the matrix ---------------------- /////
