@@ -31,35 +31,6 @@ char statement[30];
 char operation[11];
 
 /*
-  these integer will be used to print the matrices.
-  It must be set to the column size of the matrix.
-  It will be used on the printMatrix() function
-*/
-int finalMatrixcolumn = 0;
-int finalMatrixrow = 0;
-int matrix_1_column = 0;
-int matrix_2_column = 0;
-int matrix_3_column = 0;
-int matrix_4_column = 0;
-int matrix_5_column = 0;
-int matrix_6_column = 0;
-int matrix_7_column = 0;
-int matrix_8_column = 0;
-int matrix_9_column = 0;
-int matrix_10_column = 0;
-
-int matrix_1_row = 0;
-int matrix_2_row = 0;
-int matrix_3_row = 0;
-int matrix_4_row = 0;
-int matrix_5_row = 0;
-int matrix_6_row = 0;
-int matrix_7_row = 0;
-int matrix_8_row = 0;
-int matrix_9_row = 0;
-int matrix_10_row = 0;
-
-/*
   holds all the matrixes (A,B,C,D,...)
 */
 char matrix[11];
@@ -91,9 +62,9 @@ struct arg
 {
   Matrix* matrix_1;
   Matrix* matrix_2;
+  Matrix* matrix_result;
   int i;
-  int columns;
-  int direction;
+  int j;
 };
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -139,7 +110,6 @@ void printMatrix(Matrix* matrix) {
   }
   printf("\n");
 }
-
 
 
 /*
@@ -192,22 +162,11 @@ void *subtractFunc(void *args)
   Matrix* matrix_1 = params->matrix_1;
   Matrix* matrix_2 = params->matrix_2;
   int i = params->i;
-  int columns = params->columns;
-  int direction = params->direction;
+  int columns = matrix_1->cols;
 
-  if (direction == 1)
+  for (int j = 0; j < columns; j++)
   {
-    for (int j = 0; j < columns; j++)
-    {
-      matrix_1->data[i][j] = matrix_1->data[i][j] - matrix_2->data[i][j];
-    }
-  }
-  else
-  {
-    for (int j = 0; j < columns; j++)
-    {
-      matrix_1->data[i][j] = matrix_2->data[i][j] - matrix_1->data[i][j];
-    }
+    matrix_1->data[i][j] = matrix_1->data[i][j] - matrix_2->data[i][j];
   }
 
   return NULL;
@@ -216,7 +175,7 @@ void *subtractFunc(void *args)
 /*
   subtract two matrix, matrix_1 is replaced with the resulting subtraction
 */
-void subtract(Matrix* matrix_1, Matrix* matrix_2, int direction)
+void subtract(Matrix* matrix_1, Matrix* matrix_2)
 {
   pthread_t thr[matrix_1->rows];
   struct arg args[matrix_1->rows];
@@ -226,7 +185,6 @@ void subtract(Matrix* matrix_1, Matrix* matrix_2, int direction)
     args[i].i = i;
     args[i].matrix_1 = matrix_1;
     args[i].matrix_2 = matrix_2;
-    args[i].direction = direction;
     pthread_create(&thr[i], NULL, subtractFunc, (void *)&args[i]);
   }
 
@@ -238,51 +196,40 @@ void subtract(Matrix* matrix_1, Matrix* matrix_2, int direction)
 
 
 
-// void *multiplyFunc(void *args)
-// {
-//     struct arg *params = (struct arg *)args;
-//   Matrix* matrix_1 = params->matrix_1;
-//   Matrix* matrix_2 = params->matrix_2;
-//   int i = params->i;
-//   int columns = params->columns;
-//   return NULL;
-// }
-// /*
-//   Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
-//   These two are refered as 'p' in the document
-// */
-// void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
-// {
-//   for (int i = 0; i < matrix_1->rows; i++)
-//   {
-//     for (int j = 0; j < matrix_2->cols; j++)
-//     {
-//       pthread_t thr[matrix_1->cols];
-//       struct arg args[matrix_1->cols];
-//       for (int p = 0; p < matrix_1->cols; p++)
-//       {
-//         matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
-//       }  
-//     } 
-//   }
-// }
-
-void scanMatrix()
+void *multiplyFunc(void *args)
 {
-  int row = 0;
-  scanf("%d", &row);
-  int col = 0;
-  scanf("%d", &col);
-  int current_matrix[row][col];
-  for (int i = 0; i < row; i++)
+    struct arg *params = (struct arg *)args;
+  Matrix* matrix_1 = params->matrix_1;
+  Matrix* matrix_2 = params->matrix_2;
+  Matrix* matrix_result = params->matrix_result;
+  int i = params->i;
+  int j = params->j;
+  for (int p = 0; p < matrix_1->cols; p++)
   {
-    for (int j = 0; j < col; j++)
+    matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
+  }  
+  return NULL;
+}
+/*
+  Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
+  These two are refered as 'p' in the document
+*/
+void multiply(Matrix* matrix_1, Matrix* matrix_2, Matrix* matrix_result)
+{
+  for (int i = 0; i < matrix_1->rows; i++)
+  {
+    for (int j = 0; j < matrix_2->cols; j++)
     {
-      scanf("%d", &current_matrix[i][j]);
-    }
+      pthread_t thr[matrix_1->cols];
+      struct arg args[matrix_1->cols];
+      args[i].i = i;
+      args[i].matrix_1 = matrix_1;
+      args[i].matrix_2 = matrix_2;
+      args[i].j = j;
+      args[i].matrix_result = matrix_result;
+      pthread_create(&thr[i], NULL, multiplyFunc, (void *)&args[i]);
+    } 
   }
-  // printf("%d", current_matrix[79][88]);
-  // print2DArray(current_matrix, row, col);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -414,59 +361,27 @@ int main()
     matrices[i] = matrix;
   }
 
-  // Assign matrices and operations to expressions in the stack
-  for (int i = 0; i < stack.capacity; i++)
-  {
-    stack.expressions[i].matrix = &matrices[i];
-    stack.expressions[i].operation = i < totalMatrix - 1 ? operation[i] : '\0';
-  }
-
-
-  // Print all the matrix
-  // for (int i = 0; i < totalMatrix; i++) {
-  //     Matrix* matrix = matrices[i];
-  //     printf("%d\t%d\n", matrix->rows, matrix->cols);
-  //     for (int m = 0; m < matrix->rows; m++) {
-  //         for (int n = 0; n < matrix->cols; n++) {
-  //             printf("%d\t", matrix->data[m][n]);
-  //         }
-  //         printf("\n");
-  //     }
-  //     printf("\n");
-  // }
-
-
   //// --------------- Scan all the matrix ---------------------- /////
 
   if (operation[0] == '+')
   {
     add(matrices[0], matrices[1]);
     printMatrix(matrices[0]);
-    // print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
   }
-  // else if (operation[0] == '-')
-  // {
-  //   subtract(matrices[0], matrices[1], 1);
-  //   print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
-  // } else if (operation[0] == '*')  {
-  //   int(*ptrX)[matrix_2_column];
+  else if (operation[0] == '-')
+  {
+    subtract(matrices[0], matrices[1]);
+    printMatrix(matrices[0]);
+  } 
+  else if (operation[0] == '*')  {
 
-  //   int matrix_X[matrix_1_row][matrix_2_column];
-  //   finalMatrixcolumn = matrix_2_column;
-  //   finalMatrixrow = matrix_1_row;
-  //   ptrX = matrix_X;
+    Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
 
-  //   multiply(ptr1, ptr2, ptrX, matrix_1_row, matrix_1_column, matrix_2_column);
-  //   printFinalMatrix(ptrX, finalMatrixrow, finalMatrixcolumn);
-  // }
-
-  // print_first_matrix(ptr1, matrix_1_row, matrix_1_column);
+    multiply(matrices[0], matrices[1], matrix_result);
+    printMatrix(matrix_result);
+  }
 
   //// --------------- Scan all the matrix ---------------------- /////
-
-  // if (totalMatrix >= 3) {
-  //   printf("%d", matrix_E[0][0]);
-  // }
 
   // Clean up the matrices
   for (int i = 0; i < totalMatrix; i++){
