@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
+#include <stdbool.h>
 // for linux, use sysinfo (uncomment below and delete sysctl)
 // #include <sys/sysinfo.h>
 
@@ -376,6 +377,11 @@ int isOperator(char c) {
   }
   return 0;
 }
+
+bool isNotEmpty(const Stack* stack)
+{
+  return (stack->top != -1);
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////MAIN FUNCTION//////////////////////////////////
@@ -444,7 +450,7 @@ int main()
   }
 
   // Repeat popping + or - operators
-  while (!isEmpty(operatorStack))
+  while (isNotEmpty(&operatorStack))
   {
     char op = popOperator(&operatorStack);
     if (op == '+')
