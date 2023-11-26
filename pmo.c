@@ -1,6 +1,7 @@
 ////////////////////////////////Libraries///////////////////////////////////////
 #include <assert.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -368,6 +369,13 @@ void freeStack(Stack *stack)
   free(stack->expressions);
   free(stack);
 }
+
+int isOperator(char c) {
+  if (c == '*' || c== '+' || c == '-') {
+    return 1;
+  }
+  return 0;
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////MAIN FUNCTION//////////////////////////////////
@@ -414,11 +422,11 @@ int main()
     char currentChar = statement[i];
 
     // If current character is *
-    if (isOperator(currentChar) && getPriority(currentChar) >= getPriority(getTopOperator(&operatorStack))) {
+    if ((isOperator(currentChar) == 1) && getPriority(currentChar) >= getPriority(getTopOperator(&operatorStack))) {
       pushOperator(&operatorStack, currentChar);
     }
     // If current character is + - and there is a * in stack
-    else if(isOperator(currentChar) && getPriority(currentChar) < getPriority(getTopOperator(&operatorStack))) {
+    else if((isOperator(currentChar) == 1) && getPriority(currentChar) < getPriority(getTopOperator(&operatorStack))) {
       Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
       
       multiply(popMatrix(&matrixStack), popMatrix(&matrixStack), matrix_result);
@@ -430,7 +438,7 @@ int main()
       pushOperator(&operatorStack, currentChar);
     }
     // If current character is a matrix
-    else if (isCharacter(currentChar)){
+    else if (isalpha(currentChar) != 0){
       pushMatrix(&matrixStack, matrices[++numMat]);
     }
   }
