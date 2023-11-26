@@ -117,6 +117,11 @@ void printMatrix(Matrix *matrix)
   printf("\n");
 }
 
+void printMatrixNull(Matrix *matrix)
+{
+
+}
+
 /*
 arguments struct are:
 int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int i, int columns
@@ -433,10 +438,11 @@ int main()
     }
     // If current character is + - and there is a * in stack
     else if((isOperator(currentChar) == 1) && getPriority(currentChar) < getPriority(getTopOperator(&operatorStack))) {
-      Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
+      Matrix* matrix_first = popMatrix(&matrixStack);
+      Matrix* matrix_second = popMatrix(&matrixStack);
+      Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
       
-      multiply(popMatrix(&matrixStack), popMatrix(&matrixStack), matrix_result);
-      printMatrix(matrix_result);
+      multiply_multithread(matrix_first, matrix_second, matrix_result);
       pushMatrix(&matrixStack, matrix_result);
 
       // pop the * and push the current operator
@@ -446,6 +452,17 @@ int main()
     // If current character is a matrix
     else if (isalpha(currentChar) != 0){
       pushMatrix(&matrixStack, matrices[++numMat]);
+
+      // if the first operation is multiplication, it needs to be done instantly
+      if (getPriority(getTopOperator(&operatorStack)) == 2) {
+        Matrix* matrix_first = popMatrix(&matrixStack);
+        Matrix* matrix_second = popMatrix(&matrixStack);
+        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+        
+        multiply_multithread(matrix_second, matrix_first, matrix_result);
+        // printMatrix(matrix_result);
+        pushMatrix(&matrixStack, matrix_result);
+      }
     }
   }
 
@@ -455,40 +472,21 @@ int main()
     char op = popOperator(&operatorStack);
     if (op == '+')
     {
-      add(popMatrix(&matrixStack), popMatrix(&matrixStack));
-      // add() harus return matrix buat di push balik ke stack, terus uncomment yg dibawah
-      //pushMatrix(&matrixStack, result_from_add);
+      Matrix* matrix_first = popMatrix(&matrixStack);
+      Matrix* matrix_second = popMatrix(&matrixStack);
+      add(matrix_first, matrix_second);
+      pushMatrix(&matrixStack, matrix_first);
     }
     else if (op == '-')
     {
-      subtract(popMatrix(&matrixStack), popMatrix(&matrixStack));
-      // ini juga sama
-      //pushMatrix(&matrixStack, result_from_subtract);
+      Matrix* matrix_first = popMatrix(&matrixStack);
+      Matrix* matrix_second = popMatrix(&matrixStack);
+      subtract(matrix_second, matrix_first);
+      pushMatrix(&matrixStack, matrix_second);
     }
   }
 
-  //// --------------- Scan all the matrix ---------------------- /////
-
-  // if (operation[0] == '+')
-  // {
-  //   add(matrices[0], matrices[1]);
-  //   printMatrix(matrices[0]);
-  // }
-  // else if (operation[0] == '-')
-  // {
-  //   subtract(matrices[0], matrices[1]);
-  //   printMatrix(matrices[0]);
-  // }
-  // else if (operation[0] == '*')  {
-
-  //   Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
-
-  // multiply_multithread(matrices[0], matrices[1], matrix_result);
-  //   printMatrix(matrix_result);
-  // }
-
   printMatrix(popMatrix(&matrixStack));
-  //// --------------- Scan all the matrix ---------------------- /////
 
   return 0;
 }
