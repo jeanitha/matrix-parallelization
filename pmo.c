@@ -442,12 +442,14 @@ int main()
     if (op == '+')
     {
       add(popMatrix(&matrixStack), popMatrix(&matrixStack));
-      // add() harus return matrix buat di push balik ke stack
+      // add() harus return matrix buat di push balik ke stack, terus uncomment yg dibawah
+      //pushMatrix(&matrixStack, result_from_add);
     }
     else if (op == '-')
     {
       subtract(popMatrix(&matrixStack), popMatrix(&matrixStack));
       // ini juga sama
+      //pushMatrix(&matrixStack, result_from_subtract);
     }
   }
 
