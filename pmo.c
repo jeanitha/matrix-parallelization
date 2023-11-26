@@ -328,10 +328,10 @@ char popOperator(Stack* stack)
 
 char getTopOperator(const Stack* stack)
 {
-  if (stack->top == -1){
-    printf("Operator Stack Underflow\n");
-    return '\0';
-  }
+  // if (stack->top == -1){
+  //   printf("Operator Stack Underflow\n");
+  //   return '\0';
+  // }
   return stack->expressions[stack->top].operation;
 }
 
@@ -433,54 +433,87 @@ int main()
   for (int i = 2; i < strlen(statement); i++){
     char currentChar = statement[i];
 
-    // If current character is *
-    if ((isOperator(currentChar) == 1) && (getPriority(currentChar) == 3)) {
-      if (getTopOperator(&operatorStack) != '*')
-      {
-        pushOperator(&operatorStack, currentChar);
-      }
-      else if (statement[i-2] == '*')
+    // If current operator > top stack
+    if ((isOperator(currentChar)==1) && (getPriority(currentChar) > getPriority(getTopOperator(&operatorStack))))
+    {
+      pushOperator(&operatorStack, currentChar);
+    }
+    else if ((isOperator(currentChar)==1))
+    {
+      while (getPriority(currentChar) <= getPriority(getTopOperator(&operatorStack)) && isNotEmpty(&operatorStack))
       {
         Matrix* matrix_first = popMatrix(&matrixStack);
         Matrix* matrix_second = popMatrix(&matrixStack);
-
-        popOperator(&operatorStack);
-        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
-        multiply_multithread(matrix_second, matrix_first, matrix_result);
-        pushMatrix(&matrixStack, matrix_result);
-        pushOperator(&operatorStack, currentChar);
+        
+        int cur = popOperator(&operatorStack);
+        if (cur == '*')
+        {
+          Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+          multiply_multithread(matrix_second, matrix_first, matrix_result);
+          pushMatrix(&matrixStack, matrix_result);
+        }
+        else if (cur == '-')
+        {
+          subtract(matrix_second, matrix_first);
+          pushMatrix(&matrixStack, matrix_second);
+        }
+        else if(cur == '+')
+        {
+          add(matrix_first, matrix_second);
+          pushMatrix(&matrixStack, matrix_first);
+        }
       }
+      pushOperator(&operatorStack, currentChar);
     }
 
-    // If current operator priority is lower than stack
-    else if((isOperator(currentChar) == 1) && getPriority(currentChar) <= getPriority(getTopOperator(&operatorStack))) {
-      Matrix* matrix_first = popMatrix(&matrixStack);
-      Matrix* matrix_second = popMatrix(&matrixStack);
+    // // If current character is *
+    // if ((isOperator(currentChar) == 1) && (getPriority(currentChar) == 3)) {
+    //   if (getTopOperator(&operatorStack) != '*')
+    //   {
+    //     pushOperator(&operatorStack, currentChar);
+    //   }
+    //   else if (statement[i-2] == '*')
+    //   {
+    //     Matrix* matrix_first = popMatrix(&matrixStack);
+    //     Matrix* matrix_second = popMatrix(&matrixStack);
+
+    //     popOperator(&operatorStack);
+    //     Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+    //     multiply_multithread(matrix_second, matrix_first, matrix_result);
+    //     pushMatrix(&matrixStack, matrix_result);
+    //     pushOperator(&operatorStack, currentChar);
+    //   }
+    // }
+
+    // // If current operator priority is lower than stack
+    // else if((isOperator(currentChar) == 1) && getPriority(currentChar) <= getPriority(getTopOperator(&operatorStack))) {
+    //   Matrix* matrix_first = popMatrix(&matrixStack);
+    //   Matrix* matrix_second = popMatrix(&matrixStack);
       
-      int cur = popOperator(&operatorStack);
-      if (cur == '*')
-      {
-        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
-        multiply_multithread(matrix_second, matrix_first, matrix_result);
-        pushMatrix(&matrixStack, matrix_result);
-      }
-      else if (cur == '-')
-      {
-        subtract(matrix_second, matrix_first);
-        pushMatrix(&matrixStack, matrix_second);
-      }
-      else if(cur == '+')
-      {
-        add(matrix_first, matrix_second);
-        pushMatrix(&matrixStack, matrix_first);
-      }
-      pushOperator(&operatorStack, currentChar);
-    }
+    //   int cur = popOperator(&operatorStack);
+    //   if (cur == '*')
+    //   {
+    //     Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+    //     multiply_multithread(matrix_second, matrix_first, matrix_result);
+    //     pushMatrix(&matrixStack, matrix_result);
+    //   }
+    //   else if (cur == '-')
+    //   {
+    //     subtract(matrix_second, matrix_first);
+    //     pushMatrix(&matrixStack, matrix_second);
+    //   }
+    //   else if(cur == '+')
+    //   {
+    //     add(matrix_first, matrix_second);
+    //     pushMatrix(&matrixStack, matrix_first);
+    //   }
+    //   pushOperator(&operatorStack, currentChar);
+    // }
 
-    // If next operator priority is not bigger than current operator
-    else if ((isOperator(currentChar) == 1) && (getPriority(currentChar) >= getPriority(statement[i+2]))){
-      pushOperator(&operatorStack, currentChar);
-    }
+    // // If next operator priority is not bigger than current operator
+    // else if ((isOperator(currentChar) == 1) && (getPriority(currentChar) >= getPriority(statement[i+2]))){
+    //   pushOperator(&operatorStack, currentChar);
+    // }
 
     // If current character is a matrix
     else if (isalpha(currentChar) != 0){
