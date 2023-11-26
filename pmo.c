@@ -435,7 +435,21 @@ int main()
 
     // If current character is *
     if ((isOperator(currentChar) == 1) && (getPriority(currentChar) == 3)) {
-      pushOperator(&operatorStack, currentChar);
+      if (getTopOperator(&operatorStack) != '*')
+      {
+        pushOperator(&operatorStack, currentChar);
+      }
+      else if (statement[i-2] == '*')
+      {
+        Matrix* matrix_first = popMatrix(&matrixStack);
+        Matrix* matrix_second = popMatrix(&matrixStack);
+
+        popOperator(&operatorStack);
+        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+        multiply_multithread(matrix_second, matrix_first, matrix_result);
+        pushMatrix(&matrixStack, matrix_result);
+        pushOperator(&operatorStack, currentChar);
+      }
     }
 
     // If current operator priority is lower than stack
@@ -455,8 +469,12 @@ int main()
         subtract(matrix_second, matrix_first);
         pushMatrix(&matrixStack, matrix_second);
       }
+      else if(cur == '+')
+      {
+        add(matrix_first, matrix_second);
+        pushMatrix(&matrixStack, matrix_first);
+      }
       pushOperator(&operatorStack, currentChar);
-
     }
 
     // If next operator priority is not bigger than current operator
