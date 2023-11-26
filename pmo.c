@@ -13,10 +13,10 @@
 #include <string.h>
 #include <stdbool.h>
 // for linux, use sysinfo (uncomment below and delete sysctl)
-// #include <sys/sysinfo.h>
+#include <sys/sysinfo.h>
 
 // for mac, use sysctl (uncomment below and delete sysinfo)
-#include <sys/sysctl.h>
+// #include <sys/sysctl.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,14 +33,10 @@ char statement[30];
 char operation[11];
 
 /*
-  holds all the matrixes (A,B,C,D,...)
-*/
-char matrix[11];
-
-/*
   matrix count
 */
 int totalMatrix = 0;
+
 typedef struct
 {
   int rows;
@@ -61,6 +57,9 @@ typedef struct
   int capacity;
 } Stack;
 
+/*
+  struct for the arguments of thread functions
+*/
 struct arg
 {
   Matrix *matrix_1;
@@ -80,7 +79,9 @@ void append(char *s, char c)
   s[len] = c;
   s[len + 1] = '\0';
 }
-
+/*
+scan the very first statements in input files
+*/
 void scanStatement()
 {
   scanf("%s", statement);
@@ -94,16 +95,14 @@ void scanStatement()
     }
     else
     {
-      append(matrix, statement[i]);
       totalMatrix++;
     }
     i++;
   }
-  // puts(operation);
-  // puts(matrix);
-  // printf("%d", totalMatrix);
 }
-
+/*
+  loop through every row and col to print matrix
+*/
 void printMatrix(Matrix *matrix)
 {
   printf("%d\t%d\n", matrix->rows, matrix->cols);
@@ -118,14 +117,8 @@ void printMatrix(Matrix *matrix)
   printf("\n");
 }
 
-void printMatrixNull(Matrix *matrix)
-{
-
-}
-
 /*
-arguments struct are:
-int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int i, int columns
+thread function for add()
 */
 void *addFunc(void *args)
 {
@@ -134,7 +127,8 @@ void *addFunc(void *args)
   Matrix *matrix_2 = params->matrix_2;
   int param_i = params->i;
   int max = params->max;
-  for (int i = param_i; i < max; i++) {
+  for (int i = param_i; i < max; i++)
+  {
     for (int j = 0; j < matrix_1->cols; j++)
     {
       matrix_1->data[i][j] = matrix_1->data[i][j] + matrix_2->data[i][j];
@@ -145,6 +139,7 @@ void *addFunc(void *args)
 
 /*
   add two matrix, matrix_1 is replaced with the resulting addition
+  used 3 threads for each thirds of the rows
 */
 void add(Matrix *matrix_1, Matrix *matrix_2)
 {
@@ -175,8 +170,7 @@ void add(Matrix *matrix_1, Matrix *matrix_2)
 }
 
 /*
-arguments struct are:
-int (*matrix_1)[matrix_1_column], int (*matrix_2)[matrix_2_column], int i, int columns
+thread function for subtract()
 */
 void *subtractFunc(void *args)
 {
@@ -185,7 +179,8 @@ void *subtractFunc(void *args)
   Matrix *matrix_2 = params->matrix_2;
   int param_i = params->i;
   int max = params->max;
-  for (int i = param_i; i < max; i++) {
+  for (int i = param_i; i < max; i++)
+  {
     for (int j = 0; j < matrix_1->cols; j++)
     {
       matrix_1->data[i][j] = matrix_1->data[i][j] - matrix_2->data[i][j];
@@ -196,6 +191,7 @@ void *subtractFunc(void *args)
 
 /*
   subtract two matrix, matrix_1 is replaced with the resulting subtraction
+  used 3 threads for each thirds of the rows
 */
 void subtract(Matrix *matrix_1, Matrix *matrix_2)
 {
@@ -225,8 +221,9 @@ void subtract(Matrix *matrix_1, Matrix *matrix_2)
   pthread_join(thr[2], NULL);
 }
 
-
-
+/*
+thread function for multiply_multithread()
+*/
 void *multiplyFunc(void *args)
 {
   struct arg *params = (struct arg *)args;
@@ -236,7 +233,8 @@ void *multiplyFunc(void *args)
   int param_i = params->i;
   int max = params->max;
 
-  for (int i = param_i; i < max; i++) {
+  for (int i = param_i; i < max; i++)
+  {
     for (int j = 0; j < matrix_2->cols; j++)
     {
       for (int p = 0; p < matrix_1->cols; p++)
@@ -249,7 +247,9 @@ void *multiplyFunc(void *args)
 }
 /*
   Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
-  These two are refered as 'p' in the document
+  These two are refered as 'p' in the project document
+  Result of the multiplication is placed in matrix_result
+  used 3 threads for each thirds of the rows
 */
 void multiply_multithread(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_result)
 {
@@ -283,20 +283,6 @@ void multiply_multithread(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_res
   pthread_join(thr[2], NULL);
 }
 
-void multiply(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_result)
-{
-  for (int i = 0; i < matrix_1->rows; i++)
-  {
-    for (int j = 0; j < matrix_2->cols; j++)
-    {
-      for (int p = 0; p < matrix_1->cols; p++)
-      {
-        matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
-      }
-    }
-  }
-}
-
 /////////////////////////////////////////////////////////////////////////////////
 
 Matrix *initMatrix(int rows, int cols)
@@ -318,22 +304,6 @@ Matrix *initMatrix(int rows, int cols)
   return matrix;
 }
 
-void freeMatrix(Matrix *matrix)
-{
-  if (matrix == NULL)
-    return;
-
-  // Free the memory for the matrix data
-  for (int i = 0; i < matrix->rows; i++)
-  {
-    free(matrix->data[i]);
-  }
-  free(matrix->data);
-
-  // Free the memory for the matrix structure
-  free(matrix);
-}
-
 Matrix *readMatrix(int rows, int cols)
 {
   Matrix *matrix = initMatrix(rows, cols);
@@ -349,83 +319,66 @@ Matrix *readMatrix(int rows, int cols)
   return matrix;
 }
 
-void pushOperator(Stack* stack, char operator)
+void pushOperator(Stack *stack, char operator)
 {
-  if (stack->top == stack->capacity -1){
+  if (stack->top == stack->capacity - 1)
+  {
     printf("Operator Stack Overflow\n");
     return;
   }
   stack->expressions[++stack->top].operation = operator;
 }
 
-char popOperator(Stack* stack)
+char popOperator(Stack *stack)
 {
-  if (stack->top == -1){
+  if (stack->top == -1)
+  {
     printf("Operator Stack Underflow\n");
     return '\0';
   }
   return stack->expressions[stack->top--].operation;
 }
 
-char getTopOperator(const Stack* stack)
+char getTopOperator(const Stack *stack)
 {
-  // if (stack->top == -1){
-  //   printf("Operator Stack Underflow\n");
-  //   return '\0';
-  // }
   return stack->expressions[stack->top].operation;
 }
 
-void pushMatrix(Stack* stack, Matrix* matrix)
+void pushMatrix(Stack *stack, Matrix *matrix)
 {
-  if (stack->top == stack->capacity - 1) {
-    printf("Matrix Stack Overflow\n");
-    return;
-  }
   stack->expressions[++stack->top].matrix = matrix;
 }
 
-Matrix* popMatrix(Stack* stack)
+Matrix *popMatrix(Stack *stack)
 {
-  if (stack->top == -1){
-    printf("Matrix Stack Underflow\n");
-    return NULL;
-  }
   return stack->expressions[stack->top--].matrix;
 }
 
 int getPriority(char operator)
 {
-  switch(operator){
-    case '*':
-      return 3;
-    case '+':
-      return 1;
-    case '-':
-      return 2;
-    default:
-      return 0;
-  }
-}
-
-void freeStack(Stack *stack)
-{
-  for (int i = 0; i <= stack->top; i++)
+  switch (operator)
   {
-    freeMatrix(stack->expressions[i].matrix);
+  case '*':
+    return 3;
+  case '+':
+    return 1;
+  case '-':
+    return 2;
+  default:
+    return 0;
   }
-  free(stack->expressions);
-  free(stack);
 }
 
-int isOperator(char c) {
-  if (c == '*' || c== '+' || c == '-') {
+int isOperator(char c)
+{
+  if (c == '*' || c == '+' || c == '-')
+  {
     return 1;
   }
   return 0;
 }
 
-bool isNotEmpty(const Stack* stack)
+bool isNotEmpty(const Stack *stack)
 {
   return (stack->top != -1);
 }
@@ -440,13 +393,13 @@ int main()
   Stack matrixStack;
   matrixStack.capacity = totalMatrix;
   matrixStack.top = -1;
-  matrixStack.expressions = (Expression*)malloc(matrixStack.capacity * sizeof(Expression));
+  matrixStack.expressions = (Expression *)malloc(matrixStack.capacity * sizeof(Expression));
 
   Stack operatorStack;
   operatorStack.capacity = sizeof(operation);
   operatorStack.top = -1;
-  operatorStack.expressions = (Expression*)malloc(operatorStack.capacity * sizeof(Expression));
-  
+  operatorStack.expressions = (Expression *)malloc(operatorStack.capacity * sizeof(Expression));
+
   // Create matrices
   Matrix *matrices[totalMatrix];
   for (int i = 0; i < totalMatrix; i++)
@@ -471,25 +424,26 @@ int main()
   pushOperator(&operatorStack, statement[1]);
 
   // Evaluate the rest of expression & do multiplication
-  for (int i = 2; i < strlen(statement); i++){
+  for (int i = 2; i < strlen(statement); i++)
+  {
     char currentChar = statement[i];
 
     // If current operator > top stack
-    if ((isOperator(currentChar)==1) && (getPriority(currentChar) > getPriority(getTopOperator(&operatorStack))))
+    if ((isOperator(currentChar) == 1) && (getPriority(currentChar) > getPriority(getTopOperator(&operatorStack))))
     {
       pushOperator(&operatorStack, currentChar);
     }
-    else if ((isOperator(currentChar)==1))
+    else if ((isOperator(currentChar) == 1))
     {
       while (getPriority(currentChar) <= getPriority(getTopOperator(&operatorStack)) && isNotEmpty(&operatorStack))
       {
-        Matrix* matrix_first = popMatrix(&matrixStack);
-        Matrix* matrix_second = popMatrix(&matrixStack);
-        
+        Matrix *matrix_first = popMatrix(&matrixStack);
+        Matrix *matrix_second = popMatrix(&matrixStack);
+
         int cur = popOperator(&operatorStack);
         if (cur == '*')
         {
-          Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+          Matrix *matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
           multiply_multithread(matrix_second, matrix_first, matrix_result);
           pushMatrix(&matrixStack, matrix_result);
         }
@@ -498,7 +452,7 @@ int main()
           subtract(matrix_second, matrix_first);
           pushMatrix(&matrixStack, matrix_second);
         }
-        else if(cur == '+')
+        else if (cur == '+')
         {
           add(matrix_first, matrix_second);
           pushMatrix(&matrixStack, matrix_first);
@@ -507,82 +461,23 @@ int main()
       pushOperator(&operatorStack, currentChar);
     }
 
-    // // If current character is *
-    // if ((isOperator(currentChar) == 1) && (getPriority(currentChar) == 3)) {
-    //   if (getTopOperator(&operatorStack) != '*')
-    //   {
-    //     pushOperator(&operatorStack, currentChar);
-    //   }
-    //   else if (statement[i-2] == '*')
-    //   {
-    //     Matrix* matrix_first = popMatrix(&matrixStack);
-    //     Matrix* matrix_second = popMatrix(&matrixStack);
-
-    //     popOperator(&operatorStack);
-    //     Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
-    //     multiply_multithread(matrix_second, matrix_first, matrix_result);
-    //     pushMatrix(&matrixStack, matrix_result);
-    //     pushOperator(&operatorStack, currentChar);
-    //   }
-    // }
-
-    // // If current operator priority is lower than stack
-    // else if((isOperator(currentChar) == 1) && getPriority(currentChar) <= getPriority(getTopOperator(&operatorStack))) {
-    //   Matrix* matrix_first = popMatrix(&matrixStack);
-    //   Matrix* matrix_second = popMatrix(&matrixStack);
-      
-    //   int cur = popOperator(&operatorStack);
-    //   if (cur == '*')
-    //   {
-    //     Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
-    //     multiply_multithread(matrix_second, matrix_first, matrix_result);
-    //     pushMatrix(&matrixStack, matrix_result);
-    //   }
-    //   else if (cur == '-')
-    //   {
-    //     subtract(matrix_second, matrix_first);
-    //     pushMatrix(&matrixStack, matrix_second);
-    //   }
-    //   else if(cur == '+')
-    //   {
-    //     add(matrix_first, matrix_second);
-    //     pushMatrix(&matrixStack, matrix_first);
-    //   }
-    //   pushOperator(&operatorStack, currentChar);
-    // }
-
-    // // If next operator priority is not bigger than current operator
-    // else if ((isOperator(currentChar) == 1) && (getPriority(currentChar) >= getPriority(statement[i+2]))){
-    //   pushOperator(&operatorStack, currentChar);
-    // }
-
     // If current character is a matrix
-    else if (isalpha(currentChar) != 0){
+    else if (isalpha(currentChar) != 0)
+    {
       pushMatrix(&matrixStack, matrices[++numMat]);
-
-      // if the first operation is multiplication, it needs to be done instantly
-      // if (getPriority(getTopOperator(&operatorStack)) == 2) {
-      //   Matrix* matrix_first = popMatrix(&matrixStack);
-      //   Matrix* matrix_second = popMatrix(&matrixStack);
-      //   Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
-        
-      //   multiply_multithread(matrix_second, matrix_first, matrix_result);
-      //   // printMatrix(matrix_result);
-      //   pushMatrix(&matrixStack, matrix_result);
-      // }
     }
   }
 
   // Repeat popping operators
   while (isNotEmpty(&operatorStack))
   {
-    Matrix* matrix_first = popMatrix(&matrixStack);
-    Matrix* matrix_second = popMatrix(&matrixStack);
+    Matrix *matrix_first = popMatrix(&matrixStack);
+    Matrix *matrix_second = popMatrix(&matrixStack);
 
     char op = popOperator(&operatorStack);
     if (op == '*')
     {
-      Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+      Matrix *matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
       multiply_multithread(matrix_second, matrix_first, matrix_result);
       pushMatrix(&matrixStack, matrix_result);
     }
@@ -598,6 +493,7 @@ int main()
     }
   }
 
+  // print the final result
   printMatrix(popMatrix(&matrixStack));
 
   return 0;
