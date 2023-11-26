@@ -301,46 +301,62 @@ Matrix *readMatrix(int rows, int cols)
   return matrix;
 }
 
-Stack *createStack(int capacity)
+void pushOperator(Stack* stack, char operator)
 {
-  Stack *stack = (Stack *)malloc(capacity * sizeof(Stack));
-  stack->expressions = (Expression *)malloc(capacity * sizeof(Expression));
-  stack->top = -1;
-  stack->capacity = capacity;
-  return stack;
-}
-
-int isStackEmpty(Stack *stack)
-{
-  return stack->top == -1;
-}
-
-int isStackFull(Stack *stack)
-{
-  return stack->top == stack->capacity - 1;
-}
-
-void push(Stack *stack, Expression expression)
-{
-  if (isStackFull(stack))
-  {
-    printf("Stack Overflow\n");
+  if (stack->top == stack->capacity -1){
+    printf("Operator Stack Overflow\n");
     return;
   }
-  stack->expressions[++stack->top] = expression;
+  stack->expressions[++stack->top].operation = operator;
 }
 
-Expression pop(Stack *stack)
+char popOperator(Stack* stack)
 {
-  if (isStackEmpty(stack))
-  {
-    printf("Stack Underflow\n");
-    Expression emptyExpression;
-    emptyExpression.matrix = NULL;
-    emptyExpression.operation = '\0';
-    return emptyExpression;
+  if (stack->top == -1){
+    printf("Operator Stack Underflow\n");
+    return '\0';
   }
-  return stack->expressions[stack->top--];
+  return stack->expressions[stack->top--].operation;
+}
+
+char getTopOperator(const Stack* stack)
+{
+  if (stack->top == -1){
+    printf("Operator Stack Underflow\n");
+    return '\0';
+  }
+  return stack->expressions[stack->top].operation;
+}
+
+void pushMatrix(Stack* stack, Matrix* matrix)
+{
+  if (stack->top == stack->capacity - 1) {
+    printf("Matrix Stack Overflow\n");
+    return;
+  }
+  stack->expressions[++stack->top].matrix = matrix;
+}
+
+Matrix* popMatrix(Stack* stack)
+{
+  if (stack->top == -1){
+    printf("Matrix Stack Underflow\n");
+    return NULL;
+  }
+  return stack->expressions[stack->top--].matrix;
+}
+
+int getPriority(char operator)
+{
+  switch(operator){
+    case '*':
+      return 2;
+    case '+':
+    case '-':
+      return 1;
+    default:
+      return 0;
+  }
 }
 
 void freeStack(Stack *stack)
@@ -357,13 +373,19 @@ void freeStack(Stack *stack)
 /////////////////////////////////MAIN FUNCTION//////////////////////////////////
 int main()
 {
-  Stack stack;
   scanStatement();
 
-  stack.capacity = totalMatrix;
-  stack.top = -1;
-  stack.expressions = (Expression *)malloc(stack.capacity * sizeof(Expression));
+  // Initialize Matrix stack & Operator stack
+  Stack matrixStack;
+  matrixStack.capacity = totalMatrix;
+  matrixStack.top = -1;
+  matrixStack.expressions = (Expression*)malloc(matrixStack.capacity * sizeof(Expression));
 
+  Stack operatorStack;
+  operatorStack.capacity = sizeof(operation);
+  operatorStack.top = -1;
+  operatorStack.expressions = (Expression*)malloc(operatorStack.capacity * sizeof(Expression));
+  
   // Create matrices
   Matrix *matrices[totalMatrix];
   for (int i = 0; i < totalMatrix; i++)
@@ -381,11 +403,52 @@ int main()
     }
     matrices[i] = matrix;
   }
-  // Assign matrices and operations to expressions in the stack
-  for (int i = 0; i < stack.capacity; i++)
+
+  // Add the first 2 statement character into stack
+  int numMat = 0;
+  pushMatrix(&matrixStack, matrices[numMat]);
+  pushOperator(&operatorStack, statement[1]);
+
+  // Evaluate the rest of expression
+  for (int i = 2; i < strlen(statement); i++){
+    char currentChar = statement[i];
+
+    // If current character is operator with higher priority
+    if (isOperator(currentChar) && getPriority(currentChar) >= getPriority(getTopOperator(&operatorStack))) {
+      pushOperator(&operatorStack, currentChar);
+    }
+    // If current character is + - operator, do multiplications
+    else if(isOperator(currentChar) && getPriority(currentChar) < getPriority(getTopOperator(&operatorStack))) {
+      Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
+      
+      multiply(popMatrix(&matrixStack), popMatrix(&matrixStack), matrix_result);
+      printMatrix(matrix_result);
+      pushMatrix(&matrixStack, matrix_result);
+
+      // pop the * and push the current operator
+      popOperator(&operatorStack);
+      pushOperator(&operatorStack, currentChar);
+    }
+    // If current character is a matrix
+    else if (isCharacter(currentChar)){
+      pushMatrix(&matrixStack, matrices[++numMat]);
+    }
+  }
+
+  // Repeat popping + or - operators
+  while (!isEmpty(operatorStack))
   {
-    stack.expressions[i].matrix = matrices[i];
-    stack.expressions[i].operation = i < totalMatrix - 1 ? operation[i] : '\0';
+    char op = popOperator(&operatorStack);
+    if (op == '+')
+    {
+      add(popMatrix(&matrixStack), popMatrix(&matrixStack));
+      // add() harus return matrix buat di push balik ke stack
+    }
+    else if (op == '-')
+    {
+      subtract(popMatrix(&matrixStack), popMatrix(&matrixStack));
+      // ini juga sama
+    }
   }
 
   //// --------------- Scan all the matrix ---------------------- /////
@@ -408,28 +471,7 @@ int main()
   //   printMatrix(matrix_result);
   // }
 
-  for (int i = 0; i < stack.capacity; i++)
-  {
-    if (stack.expressions[i].operation == '*')
-    {
-      Matrix *matrix_result = (Matrix *)malloc(sizeof(Matrix));
-      multiply(stack.expressions[i].matrix, stack.expressions[i + 1].matrix, matrix_result);
-      stack.expressions[i + 1].matrix = matrix_result;
-      i++;
-    }
-    else if (stack.expressions[i].operation == '+')
-    {
-      add(stack.expressions[i].matrix, stack.expressions[i + 1].matrix);
-      i++;
-    }
-    else if (stack.expressions[i].operation == '-')
-    {
-      subtract(stack.expressions[i].matrix, stack.expressions[i + 1].matrix);
-      i++;
-    }
-  }
-
-  printMatrix(stack.expressions[stack.capacity - 1].matrix);
+  printMatrix(popMatrix(&matrixStack));
   //// --------------- Scan all the matrix ---------------------- /////
 
   return 0;
