@@ -404,20 +404,20 @@ int main()
     matrices[i] = matrix;
   }
 
-  // Add the first 2 statement character into stack
+  // Add the first 2 characters character into stack
   int numMat = 0;
   pushMatrix(&matrixStack, matrices[numMat]);
   pushOperator(&operatorStack, statement[1]);
 
-  // Evaluate the rest of expression
+  // Evaluate the rest of expression & do multiplication
   for (int i = 2; i < strlen(statement); i++){
     char currentChar = statement[i];
 
-    // If current character is operator with higher priority
+    // If current character is *
     if (isOperator(currentChar) && getPriority(currentChar) >= getPriority(getTopOperator(&operatorStack))) {
       pushOperator(&operatorStack, currentChar);
     }
-    // If current character is + - operator, do multiplications
+    // If current character is + - and there is a * in stack
     else if(isOperator(currentChar) && getPriority(currentChar) < getPriority(getTopOperator(&operatorStack))) {
       Matrix* matrix_result = initMatrix(matrices[0]->rows, matrices[1]->cols);
       
