@@ -435,8 +435,54 @@ int main()
 
   // Add the first 2 characters character into stack
   int numMat = 0;
-  pushMatrix(&matrixStack, matrices[numMat]);
+  pushMatrix(&matrixStack, matrices[numMat++]);
   pushOperator(&operatorStack, statement[1]);
+  pushMatrix(&matrixStack, matrices[numMat++]);
+
+  int i = 3;
+  if (i >= strlen(statement)) {
+      Matrix* matrix_first = popMatrix(&matrixStack);
+      Matrix* matrix_second = popMatrix(&matrixStack);
+      int cur = popOperator(&operatorStack);
+      if (cur == '*')
+      {
+        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+        multiply_multithread(matrix_second, matrix_first, matrix_result);
+        pushMatrix(&matrixStack, matrix_result);
+      }
+      else if (cur == '-')
+      {
+        subtract(matrix_second, matrix_first);
+        pushMatrix(&matrixStack, matrix_second);
+      }
+      else if(cur == '+')
+      {
+        add(matrix_first, matrix_second);
+        pushMatrix(&matrixStack, matrix_first);
+      }
+  }
+  while (i < strlen(statement)) {
+    char currentChar = statement[i];
+
+    if (isOperator(currentChar) == 1) {
+      pushOperator(&operatorStack, currentChar);
+
+    } else if (isalpha(currentChar) != 0){
+      pushMatrix(&matrixStack, matrices[++numMat]);
+      if (getPriority(getTopOperator(&operatorStack)) == 3) {
+          popOperator(&operatorStack);
+          Matrix* matrix_first = popMatrix(&matrixStack);
+          Matrix* matrix_second = popMatrix(&matrixStack);
+          Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+          
+          multiply_multithread(matrix_second, matrix_first, matrix_result);
+          pushMatrix(&matrixStack, matrix_result);
+      } else if (getPreviousOperator(&operatorStack) != '\0') {
+
+      }
+    }
+    i++;
+  }
 
   for (int i = 2; i < strlen(statement); i++){
     char currentChar = statement[i];

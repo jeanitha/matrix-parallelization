@@ -68,6 +68,7 @@ struct arg
   Matrix *matrix_result;
   int i;
   int j;
+  int max;
 };
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -131,11 +132,13 @@ void *addFunc(void *args)
   struct arg *params = (struct arg *)args;
   Matrix *matrix_1 = params->matrix_1;
   Matrix *matrix_2 = params->matrix_2;
-  int i = params->i;
-
-  for (int j = 0; j < matrix_1->cols; j++)
-  {
-    matrix_1->data[i][j] = matrix_1->data[i][j] + matrix_2->data[i][j];
+  int param_i = params->i;
+  int max = params->max;
+  for (int i = param_i; i < max; i++) {
+    for (int j = 0; j < matrix_1->cols; j++)
+    {
+      matrix_1->data[i][j] = matrix_1->data[i][j] + matrix_2->data[i][j];
+    }
   }
   return NULL;
 }
@@ -145,21 +148,30 @@ void *addFunc(void *args)
 */
 void add(Matrix *matrix_1, Matrix *matrix_2)
 {
-  pthread_t thr[matrix_1->rows];
-  struct arg args[matrix_1->rows];
+  pthread_t thr[3];
+  struct arg args[3];
 
-  for (int i = 0; i < matrix_1->rows; i++)
-  {
-    args[i].i = i;
-    args[i].matrix_1 = matrix_1;
-    args[i].matrix_2 = matrix_2;
-    pthread_create(&thr[i], NULL, addFunc, (void *)&args[i]);
-  }
+  int third = matrix_1->rows / 3;
+  args[0].i = 0;
+  args[0].max = third;
+  args[0].matrix_1 = matrix_1;
+  args[0].matrix_2 = matrix_2;
 
-  for (int i = 0; i < matrix_1->rows; i++)
-  {
-    pthread_join(thr[i], NULL);
-  }
+  args[1].i = third;
+  args[1].max = third * 2;
+  args[1].matrix_1 = matrix_1;
+  args[1].matrix_2 = matrix_2;
+
+  args[2].i = third * 2;
+  args[2].max = matrix_1->rows;
+  args[2].matrix_1 = matrix_1;
+  args[2].matrix_2 = matrix_2;
+  pthread_create(&thr[0], NULL, addFunc, (void *)&args[0]);
+  pthread_create(&thr[1], NULL, addFunc, (void *)&args[1]);
+  pthread_create(&thr[2], NULL, addFunc, (void *)&args[2]);
+  pthread_join(thr[0], NULL);
+  pthread_join(thr[1], NULL);
+  pthread_join(thr[2], NULL);
 }
 
 /*
@@ -171,14 +183,14 @@ void *subtractFunc(void *args)
   struct arg *params = (struct arg *)args;
   Matrix *matrix_1 = params->matrix_1;
   Matrix *matrix_2 = params->matrix_2;
-  int i = params->i;
-  int columns = matrix_1->cols;
-
-  for (int j = 0; j < columns; j++)
-  {
-    matrix_1->data[i][j] = matrix_1->data[i][j] - matrix_2->data[i][j];
+  int param_i = params->i;
+  int max = params->max;
+  for (int i = param_i; i < max; i++) {
+    for (int j = 0; j < matrix_1->cols; j++)
+    {
+      matrix_1->data[i][j] = matrix_1->data[i][j] - matrix_2->data[i][j];
+    }
   }
-
   return NULL;
 }
 
@@ -187,22 +199,33 @@ void *subtractFunc(void *args)
 */
 void subtract(Matrix *matrix_1, Matrix *matrix_2)
 {
-  pthread_t thr[matrix_1->rows];
-  struct arg args[matrix_1->rows];
+  pthread_t thr[3];
+  struct arg args[3];
 
-  for (int i = 0; i < matrix_1->rows; i++)
-  {
-    args[i].i = i;
-    args[i].matrix_1 = matrix_1;
-    args[i].matrix_2 = matrix_2;
-    pthread_create(&thr[i], NULL, subtractFunc, (void *)&args[i]);
-  }
+  int third = matrix_1->rows / 3;
+  args[0].i = 0;
+  args[0].max = third;
+  args[0].matrix_1 = matrix_1;
+  args[0].matrix_2 = matrix_2;
 
-  for (int i = 0; i < matrix_1->rows; i++)
-  {
-    pthread_join(thr[i], NULL);
-  }
+  args[1].i = third;
+  args[1].max = third * 2;
+  args[1].matrix_1 = matrix_1;
+  args[1].matrix_2 = matrix_2;
+
+  args[2].i = third * 2;
+  args[2].max = matrix_1->rows;
+  args[2].matrix_1 = matrix_1;
+  args[2].matrix_2 = matrix_2;
+  pthread_create(&thr[0], NULL, subtractFunc, (void *)&args[0]);
+  pthread_create(&thr[1], NULL, subtractFunc, (void *)&args[1]);
+  pthread_create(&thr[2], NULL, subtractFunc, (void *)&args[2]);
+  pthread_join(thr[0], NULL);
+  pthread_join(thr[1], NULL);
+  pthread_join(thr[2], NULL);
 }
+
+
 
 void *multiplyFunc(void *args)
 {
@@ -210,12 +233,16 @@ void *multiplyFunc(void *args)
   Matrix *matrix_1 = params->matrix_1;
   Matrix *matrix_2 = params->matrix_2;
   Matrix *matrix_result = params->matrix_result;
-  int i = params->i;
-  for (int j = 0; j < matrix_2->cols; j++)
-  {
-    for (int p = 0; p < matrix_1->cols; p++)
+  int param_i = params->i;
+  int max = params->max;
+
+  for (int i = param_i; i < max; i++) {
+    for (int j = 0; j < matrix_2->cols; j++)
     {
-      matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
+      for (int p = 0; p < matrix_1->cols; p++)
+      {
+        matrix_result->data[i][j] = matrix_result->data[i][j] + matrix_1->data[i][p] * matrix_2->data[p][j];
+      }
     }
   }
   return NULL;
@@ -226,20 +253,34 @@ void *multiplyFunc(void *args)
 */
 void multiply_multithread(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_result)
 {
-  pthread_t thr[matrix_1->rows];
-  struct arg args[matrix_1->rows];
-  for (int i = 0; i < matrix_1->rows; i++)
-  {
-    args[i].i = i;
-    args[i].matrix_1 = matrix_1;
-    args[i].matrix_2 = matrix_2;
-    args[i].matrix_result = matrix_result;
-    pthread_create(&thr[i], NULL, multiplyFunc, (void *)&args[i]);
-  }
-  for (int i = 0; i < matrix_1->rows; i++)
-  {
-    pthread_join(thr[i], NULL);
-  }
+  pthread_t thr[3];
+  struct arg args[3];
+
+  int third = matrix_1->rows / 3;
+  args[0].i = 0;
+  args[0].max = third;
+  args[0].matrix_1 = matrix_1;
+  args[0].matrix_2 = matrix_2;
+  args[0].matrix_result = matrix_result;
+
+  args[1].i = third;
+  args[1].max = third * 2;
+  args[1].matrix_1 = matrix_1;
+  args[1].matrix_2 = matrix_2;
+  args[1].matrix_result = matrix_result;
+
+  args[2].i = third * 2;
+  args[2].max = matrix_1->rows;
+  args[2].matrix_1 = matrix_1;
+  args[2].matrix_2 = matrix_2;
+  args[2].matrix_result = matrix_result;
+
+  pthread_create(&thr[0], NULL, multiplyFunc, (void *)&args[0]);
+  pthread_create(&thr[1], NULL, multiplyFunc, (void *)&args[1]);
+  pthread_create(&thr[2], NULL, multiplyFunc, (void *)&args[2]);
+  pthread_join(thr[0], NULL);
+  pthread_join(thr[1], NULL);
+  pthread_join(thr[2], NULL);
 }
 
 void multiply(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_result)
