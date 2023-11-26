@@ -13,10 +13,10 @@
 #include <string.h>
 #include <stdbool.h>
 // for linux, use sysinfo (uncomment below and delete sysctl)
-// #include <sys/sysinfo.h>
+#include <sys/sysinfo.h>
 
 // for mac, use sysctl (uncomment below and delete sysinfo)
-#include <sys/sysctl.h>
+// #include <sys/sysctl.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -326,15 +326,6 @@ char popOperator(Stack* stack)
   return stack->expressions[stack->top--].operation;
 }
 
-char getPreviousOperator(Stack* stack)
-{
-  if (stack->top < 1){
-    return '\0';
-  }
-  int num = stack->top;
-  return stack->expressions[--num].operation;
-}
-
 char getTopOperator(const Stack* stack)
 {
   if (stack->top == -1){
@@ -438,27 +429,100 @@ int main()
   pushMatrix(&matrixStack, matrices[numMat]);
   pushOperator(&operatorStack, statement[1]);
 
+  // Evaluate the rest of expression & do multiplication
   for (int i = 2; i < strlen(statement); i++){
     char currentChar = statement[i];
-    if (isOperator(currentChar) == 1) {
+
+    // If current character is *
+    if ((isOperator(currentChar) == 1) && (getPriority(currentChar) == 3)) {
+      if (getTopOperator(&operatorStack) != '*')
+      {
+        pushOperator(&operatorStack, currentChar);
+      }
+      else if (statement[i-2] == '*')
+      {
+        Matrix* matrix_first = popMatrix(&matrixStack);
+        Matrix* matrix_second = popMatrix(&matrixStack);
+
+        popOperator(&operatorStack);
+        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+        multiply(matrix_second, matrix_first, matrix_result);
+        pushMatrix(&matrixStack, matrix_result);
+        pushOperator(&operatorStack, currentChar);
+      }
+    }
+
+    // If current operator priority is lower than stack
+    else if((isOperator(currentChar) == 1) && getPriority(currentChar) <= getPriority(getTopOperator(&operatorStack))) {
+      Matrix* matrix_first = popMatrix(&matrixStack);
+      Matrix* matrix_second = popMatrix(&matrixStack);
+      
+      int cur = popOperator(&operatorStack);
+      if (cur == '*')
+      {
+        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+        multiply(matrix_second, matrix_first, matrix_result);
+        pushMatrix(&matrixStack, matrix_result);
+      }
+      else if (cur == '-')
+      {
+        subtract(matrix_second, matrix_first);
+        pushMatrix(&matrixStack, matrix_second);
+      }
+      else if(cur == '+')
+      {
+        add(matrix_first, matrix_second);
+        pushMatrix(&matrixStack, matrix_first);
+      }
       pushOperator(&operatorStack, currentChar);
-    } else if (isalpha(currentChar) != 0){
+    }
+
+    // If next operator priority is not bigger than current operator
+    else if ((isOperator(currentChar) == 1) && (getPriority(currentChar) >= getPriority(statement[i+2]))){
+      pushOperator(&operatorStack, currentChar);
+    }
+
+    // If current character is a matrix
+    else if (isalpha(currentChar) != 0){
       pushMatrix(&matrixStack, matrices[++numMat]);
 
-        if (getPriority(getTopOperator(&operatorStack)) == 2) {
-            popOperator(&operatorStack);
-            Matrix* matrix_first = popMatrix(&matrixStack);
-            Matrix* matrix_second = popMatrix(&matrixStack);
-            Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
-            
-            multiply_multithread(matrix_second, matrix_first, matrix_result);
-            pushMatrix(&matrixStack, matrix_result);
-        } else if (getPreviousOperator(&operatorStack) != '\0') {
-
-        }
+      // if the first operation is multiplication, it needs to be done instantly
+      // if (getPriority(getTopOperator(&operatorStack)) == 2) {
+      //   Matrix* matrix_first = popMatrix(&matrixStack);
+      //   Matrix* matrix_second = popMatrix(&matrixStack);
+      //   Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+        
+      //   multiply_multithread(matrix_second, matrix_first, matrix_result);
+      //   // printMatrix(matrix_result);
+      //   pushMatrix(&matrixStack, matrix_result);
+      // }
     }
   }
 
+  // Repeat popping operators
+  while (isNotEmpty(&operatorStack))
+  {
+    Matrix* matrix_first = popMatrix(&matrixStack);
+    Matrix* matrix_second = popMatrix(&matrixStack);
+
+    char op = popOperator(&operatorStack);
+    if (op == '*')
+    {
+      Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+      multiply(matrix_second, matrix_first, matrix_result);
+      pushMatrix(&matrixStack, matrix_result);
+    }
+    else if (op == '+')
+    {
+      add(matrix_first, matrix_second);
+      pushMatrix(&matrixStack, matrix_first);
+    }
+    else if (op == '-')
+    {
+      subtract(matrix_second, matrix_first);
+      pushMatrix(&matrixStack, matrix_second);
+    }
+  }
 
   printMatrix(popMatrix(&matrixStack));
 
