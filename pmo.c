@@ -357,10 +357,11 @@ int getPriority(char operator)
 {
   switch(operator){
     case '*':
-      return 2;
+      return 3;
     case '+':
-    case '-':
       return 1;
+    case '-':
+      return 2;
     default:
       return 0;
   }
@@ -433,54 +434,73 @@ int main()
     char currentChar = statement[i];
 
     // If current character is *
-    if ((isOperator(currentChar) == 1) && getPriority(currentChar) >= getPriority(getTopOperator(&operatorStack))) {
+    if ((isOperator(currentChar) == 1) && (getPriority(currentChar) == 3)) {
       pushOperator(&operatorStack, currentChar);
     }
-    // If current character is + - and there is a * in stack
-    else if((isOperator(currentChar) == 1) && getPriority(currentChar) < getPriority(getTopOperator(&operatorStack))) {
+
+    // If current operator priority is lower than stack
+    else if((isOperator(currentChar) == 1) && getPriority(currentChar) <= getPriority(getTopOperator(&operatorStack))) {
       Matrix* matrix_first = popMatrix(&matrixStack);
       Matrix* matrix_second = popMatrix(&matrixStack);
-      Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
       
-      multiply_multithread(matrix_first, matrix_second, matrix_result);
-      pushMatrix(&matrixStack, matrix_result);
+      int cur = popOperator(&operatorStack);
+      if (cur == '*')
+      {
+        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+        multiply_multithread(matrix_first, matrix_second, matrix_result);
+        pushMatrix(&matrixStack, matrix_result);
+      }
+      else if (cur == '-')
+      {
+        subtract(matrix_second, matrix_first);
+        pushMatrix(&matrixStack, matrix_second);
+      }
+      pushOperator(&operatorStack, currentChar);
 
-      // pop the * and push the current operator
-      popOperator(&operatorStack);
+    }
+
+    // If next operator priority is not bigger than current operator
+    else if ((isOperator(currentChar) == 1) && (getPriority(currentChar) >= getPriority(statement[i+2]))){
       pushOperator(&operatorStack, currentChar);
     }
+
     // If current character is a matrix
     else if (isalpha(currentChar) != 0){
       pushMatrix(&matrixStack, matrices[++numMat]);
 
       // if the first operation is multiplication, it needs to be done instantly
-      if (getPriority(getTopOperator(&operatorStack)) == 2) {
-        Matrix* matrix_first = popMatrix(&matrixStack);
-        Matrix* matrix_second = popMatrix(&matrixStack);
-        Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+      // if (getPriority(getTopOperator(&operatorStack)) == 2) {
+      //   Matrix* matrix_first = popMatrix(&matrixStack);
+      //   Matrix* matrix_second = popMatrix(&matrixStack);
+      //   Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
         
-        multiply_multithread(matrix_second, matrix_first, matrix_result);
-        // printMatrix(matrix_result);
-        pushMatrix(&matrixStack, matrix_result);
-      }
+      //   multiply_multithread(matrix_second, matrix_first, matrix_result);
+      //   // printMatrix(matrix_result);
+      //   pushMatrix(&matrixStack, matrix_result);
+      // }
     }
   }
 
-  // Repeat popping + or - operators
+  // Repeat popping operators
   while (isNotEmpty(&operatorStack))
   {
+    Matrix* matrix_first = popMatrix(&matrixStack);
+    Matrix* matrix_second = popMatrix(&matrixStack);
+
     char op = popOperator(&operatorStack);
-    if (op == '+')
+    if (op == '*')
     {
-      Matrix* matrix_first = popMatrix(&matrixStack);
-      Matrix* matrix_second = popMatrix(&matrixStack);
+      Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
+      multiply_multithread(matrix_first, matrix_second, matrix_result);
+      pushMatrix(&matrixStack, matrix_result);
+    }
+    else if (op == '+')
+    {
       add(matrix_first, matrix_second);
       pushMatrix(&matrixStack, matrix_first);
     }
     else if (op == '-')
     {
-      Matrix* matrix_first = popMatrix(&matrixStack);
-      Matrix* matrix_second = popMatrix(&matrixStack);
       subtract(matrix_second, matrix_first);
       pushMatrix(&matrixStack, matrix_second);
     }
