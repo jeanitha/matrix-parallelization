@@ -447,7 +447,7 @@ int main()
       if (cur == '*')
       {
         Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
-        multiply_multithread(matrix_first, matrix_second, matrix_result);
+        multiply_multithread(matrix_second, matrix_first, matrix_result);
         pushMatrix(&matrixStack, matrix_result);
       }
       else if (cur == '-')
@@ -491,7 +491,7 @@ int main()
     if (op == '*')
     {
       Matrix* matrix_result = initMatrix(matrix_second->rows, matrix_first->cols);
-      multiply_multithread(matrix_first, matrix_second, matrix_result);
+      multiply_multithread(matrix_second, matrix_first, matrix_result);
       pushMatrix(&matrixStack, matrix_result);
     }
     else if (op == '+')
