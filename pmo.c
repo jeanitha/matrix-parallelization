@@ -13,10 +13,10 @@
 #include <string.h>
 #include <stdbool.h>
 // for linux, use sysinfo (uncomment below and delete sysctl)
-#include <sys/sysinfo.h>
+// #include <sys/sysinfo.h>
 
 // for mac, use sysctl (uncomment below and delete sysinfo)
-// #include <sys/sysctl.h>
+#include <sys/sysctl.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -143,14 +143,15 @@ void *addFunc(void *args)
 */
 void add(Matrix *matrix_1, Matrix *matrix_2)
 {
-  pthread_t thr[3];
-  struct arg args[3];
+  pthread_t thr[4];
+  struct arg args[4];
 
-  int third = matrix_1->rows / 3;
+  int third = matrix_1->rows / 4;
   args[0].i = 0;
   args[0].max = third;
   args[0].matrix_1 = matrix_1;
   args[0].matrix_2 = matrix_2;
+  
 
   args[1].i = third;
   args[1].max = third * 2;
@@ -158,15 +159,23 @@ void add(Matrix *matrix_1, Matrix *matrix_2)
   args[1].matrix_2 = matrix_2;
 
   args[2].i = third * 2;
-  args[2].max = matrix_1->rows;
+  args[2].max = third * 3;
   args[2].matrix_1 = matrix_1;
   args[2].matrix_2 = matrix_2;
+
+  args[3].i = third * 3;
+  args[3].max = matrix_1->rows;
+  args[3].matrix_1 = matrix_1;
+  args[3].matrix_2 = matrix_2;
+
   pthread_create(&thr[0], NULL, addFunc, (void *)&args[0]);
   pthread_create(&thr[1], NULL, addFunc, (void *)&args[1]);
   pthread_create(&thr[2], NULL, addFunc, (void *)&args[2]);
+  pthread_create(&thr[3], NULL, addFunc, (void *)&args[3]);
   pthread_join(thr[0], NULL);
   pthread_join(thr[1], NULL);
   pthread_join(thr[2], NULL);
+  pthread_join(thr[3], NULL);
 }
 
 /*
@@ -195,10 +204,10 @@ void *subtractFunc(void *args)
 */
 void subtract(Matrix *matrix_1, Matrix *matrix_2)
 {
-  pthread_t thr[3];
-  struct arg args[3];
+  pthread_t thr[4];
+  struct arg args[4];
 
-  int third = matrix_1->rows / 3;
+  int third = matrix_1->rows / 4;
   args[0].i = 0;
   args[0].max = third;
   args[0].matrix_1 = matrix_1;
@@ -210,15 +219,23 @@ void subtract(Matrix *matrix_1, Matrix *matrix_2)
   args[1].matrix_2 = matrix_2;
 
   args[2].i = third * 2;
-  args[2].max = matrix_1->rows;
+  args[2].max = third * 3;
   args[2].matrix_1 = matrix_1;
   args[2].matrix_2 = matrix_2;
+
+  args[3].i = third * 3;
+  args[3].max = matrix_1->rows;
+  args[3].matrix_1 = matrix_1;
+  args[3].matrix_2 = matrix_2;
+
   pthread_create(&thr[0], NULL, subtractFunc, (void *)&args[0]);
   pthread_create(&thr[1], NULL, subtractFunc, (void *)&args[1]);
   pthread_create(&thr[2], NULL, subtractFunc, (void *)&args[2]);
+  pthread_create(&thr[3], NULL, subtractFunc, (void *)&args[3]);
   pthread_join(thr[0], NULL);
   pthread_join(thr[1], NULL);
   pthread_join(thr[2], NULL);
+  pthread_join(thr[3], NULL);
 }
 
 /*
@@ -253,10 +270,10 @@ void *multiplyFunc(void *args)
 */
 void multiply_multithread(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_result)
 {
-  pthread_t thr[3];
-  struct arg args[3];
+  pthread_t thr[4];
+  struct arg args[4];
 
-  int third = matrix_1->rows / 3;
+  int third = matrix_1->rows / 4;
   args[0].i = 0;
   args[0].max = third;
   args[0].matrix_1 = matrix_1;
@@ -270,17 +287,25 @@ void multiply_multithread(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_res
   args[1].matrix_result = matrix_result;
 
   args[2].i = third * 2;
-  args[2].max = matrix_1->rows;
+  args[2].max = third * 3;
   args[2].matrix_1 = matrix_1;
   args[2].matrix_2 = matrix_2;
   args[2].matrix_result = matrix_result;
 
+  args[3].i = third * 3;
+  args[3].max = matrix_1->rows;
+  args[3].matrix_1 = matrix_1;
+  args[3].matrix_2 = matrix_2;
+  args[3].matrix_result = matrix_result;
+
   pthread_create(&thr[0], NULL, multiplyFunc, (void *)&args[0]);
   pthread_create(&thr[1], NULL, multiplyFunc, (void *)&args[1]);
   pthread_create(&thr[2], NULL, multiplyFunc, (void *)&args[2]);
+  pthread_create(&thr[3], NULL, multiplyFunc, (void *)&args[3]);
   pthread_join(thr[0], NULL);
   pthread_join(thr[1], NULL);
   pthread_join(thr[2], NULL);
+  pthread_join(thr[3], NULL);
 }
 
 //////////////////////////////////////////////////////////////////////////////
