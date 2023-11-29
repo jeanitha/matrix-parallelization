@@ -115,7 +115,7 @@ void printMatrix(Matrix *matrix)
     printf("\n");
   }
   printf("\n");
-}
+} 
 
 /*
 thread function for add()
@@ -283,7 +283,7 @@ void multiply_multithread(Matrix *matrix_1, Matrix *matrix_2, Matrix *matrix_res
   pthread_join(thr[2], NULL);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 Matrix *initMatrix(int rows, int cols)
 {
@@ -299,21 +299,6 @@ Matrix *initMatrix(int rows, int cols)
   for (int i = 0; i < rows; i++)
   {
     matrix->data[i] = (int *)malloc(cols * sizeof(int));
-  }
-
-  return matrix;
-}
-
-Matrix *readMatrix(int rows, int cols)
-{
-  Matrix *matrix = initMatrix(rows, cols);
-
-  for (int i = 0; i < rows; i++)
-  {
-    for (int j = 0; j < cols; j++)
-    {
-      scanf("%d", &(matrix->data[i][j]));
-    }
   }
 
   return matrix;
