@@ -13,10 +13,10 @@
 #include <string.h>
 #include <stdbool.h>
 // for linux, use sysinfo (uncomment below and delete sysctl)
-// #include <sys/sysinfo.h>
+#include <sys/sysinfo.h>
 
 // for mac, use sysctl (uncomment below and delete sysinfo)
-#include <sys/sysctl.h>
+// #include <sys/sysctl.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -264,7 +264,7 @@ void *multiplyFunc(void *args)
 }
 /*
   Multiply function. columns_1 = rows_2 hence no need for rows_2 as parameters.
-  These two are refered as 'p' in the project document
+  These two are referred as 'p' in the project document
   Result of the multiplication is placed in matrix_result
   used 3 threads for each thirds of the rows
 */
